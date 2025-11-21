@@ -1,77 +1,61 @@
-// src/java/data_access/JsonFileLandmarkDataAccessObject.java
 package data_access;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import entity.Landmark;
-import entity.LandmarkInfo;
-import entity.Location;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
-public class JsonFileLandmarkDataAccessObject implements LandmarkDataAccessInterface {
+/**
+ * DAO for landmark data stored in JSON.
+ * This class is read only, meaning that landmark cannot be written into json
+ */
+public class JSONFileLandmarkDataAccessObject implements LandmarkDataAccessInterface {
+    private JsonNode root;
 
-    private final String filePath;   // absolute or relative path
+    private final ObjectMapper mapper = new ObjectMapper();
+    private final File file;
+    private final Map<String, Landmark> landmarks = new HashMap<>();
 
-    public JsonFileLandmarkDataAccessObject(String filePath) {
-        this.filePath = filePath;   // e.g. "minimal_landmarks.json"
+    public JSONFileLandmarkDataAccessObject(String jsonFilePath) {
+        this.file = new File(jsonFilePath);
+
+        if (!file.exists()) {
+            throw new RuntimeException("JSON file does not exist: " + jsonFilePath);
+        }
+
+        if (file.length() == 0) {
+            this.root = mapper.createArrayNode();
+            return;
+        }
+
+        try {
+            this.root = mapper.readTree(file);
+
+            if (!root.isArray()) {
+                throw new RuntimeException("Expected root JSON array");
+            }
+
+            for (JsonNode node : root) {
+                Landmark landmark = mapper.treeToValue(node, Landmark.class);
+                landmarks.put(landmark.getLandmarkName(), landmark);
+            }
+        }
+        catch (Exception e) {
+            throw new RuntimeException("Failed to parse JSON file", e);
+        }
     }
 
     @Override
-    public List<Landmark> getLandmarks() {
-        List<Landmark> result = new ArrayList<>();
-
-        try (InputStream is = new FileInputStream(filePath)) {
-
-            String jsonText;
-            try (Scanner scanner = new Scanner(is, StandardCharsets.UTF_8)) {
-                jsonText = scanner.useDelimiter("\\A").next();
-            }
-
-            JSONArray arr = new JSONArray(jsonText);
-
-            for (int i = 0; i < arr.length(); i++) {
-                JSONObject o = arr.getJSONObject(i);
-
-                String name = o.getString("name");
-                double lat = o.getDouble("latitude");
-                double lng = o.getDouble("longitude");
-
-                // optional id, fallback if missing
-                String id = o.has("id") ? o.getString("id") : name.replace(" ", "_").toLowerCase();
-
-                Location loc = new Location(lat, lng);
-
-                // Your constructor requires LandmarkInfo so create a dummy one
-                LandmarkInfo info = new LandmarkInfo(" ", " ", " ", " ");
-
-                // Your Landmark constructor: (id, name, Location, LandmarkInfo, visitCount)
-                result.add(new Landmark(id, name, loc, info, 0));
-            }
-
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to load landmarks from JSON at: " + filePath, e);
-        }
-
-        return result;
+    public boolean existsByName(String username) {
+        return landmarks.containsKey(username);
     }
 
     @Override
-    public boolean existsByName(String landmarkName) {
-        if (landmarkName == null) {
-            return false;
-        }
-
-        for (Landmark lm : getLandmarks()) {
-            if (lm.getLandmarkName().equalsIgnoreCase(landmarkName)) {
-                return true;
-            }
-        }
-        return false;
+    public Map<String, Landmark> getLandmarks() {
+        return landmarks;
     }
 }
