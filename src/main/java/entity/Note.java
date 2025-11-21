@@ -9,13 +9,26 @@ public class Note {
     private final Instant createdAt;
     private Instant updatedAt;
 
-    public Note(String noteId, Landmark landmark, String content) {
-        this.noteId = noteId;
+    public Note(Landmark landmark, String content) {
+        this.noteId = landmark.getLandmarkName() + Instant.now();
         this.landmark = landmark;
         this.content = content;
         this.createdAt = Instant.now();
         this.updatedAt = this.createdAt;
     }
+
+    public Note(String noteId,
+                Landmark landmark,
+                String content,
+                Instant createdAt,
+                Instant updatedAt) {
+        this.noteId = noteId;
+        this.landmark = landmark;
+        this.content = content;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+
     public String getNoteId() {
         return noteId;
     }

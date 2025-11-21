@@ -1,81 +1,112 @@
 package app;
 
-import data_access.FileUserDataAccessObject;
-import data_access.JsonFileLandmarkDataAccessObject;
-import data_access.*;
+import data_access.JsonUserDataAccessObject;
+import data_access.JsonLandmarkDataAccessObject;
+import data_access.LandmarkDataAccessInterface;
+import data_access.UserDataAccessInterface;
 import entity.UserFactory;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.browselandmarks.BrowseLandmarksController;
 import interface_adapter.browselandmarks.BrowseLandmarksPresenter;
 import interface_adapter.browselandmarks.BrowseLandmarksViewModel;
+import interface_adapter.homescreen.HomescreenController;
+import interface_adapter.homescreen.HomescreenPresenter;
+import interface_adapter.homescreen.HomescreenViewModel;
 import interface_adapter.login.LoginController;
 import interface_adapter.login.LoginPresenter;
 import interface_adapter.login.LoginViewModel;
+import interface_adapter.selectedplace.SelectedPlaceController;
+import interface_adapter.selectedplace.SelectedPlacePresenter;
+import interface_adapter.selectedplace.SelectedPlaceViewModel;
 import interface_adapter.signup.SignupController;
 import interface_adapter.signup.SignupPresenter;
 import interface_adapter.signup.SignupViewModel;
-import use_case.browselandmarks.BrowseLandmarksInteractor;
-import use_case.login.LoginInputBoundary;
-import use_case.login.LoginInteractor;
-import use_case.login.LoginOutputBoundary;
-import use_case.signup.SignupInputBoundary;
-import use_case.signup.SignupInteractor;
-import use_case.signup.SignupOutputBoundary;
-import view.BrowseLandmarksView;
-import view.LoginView;
-import view.SignupView;
-import view.ViewManager;
+// NEW imports for Notes
+import interface_adapter.addnotes.AddNotesController;
+import interface_adapter.addnotes.AddNotesPresenter;
+import interface_adapter.addnotes.AddNotesViewModel;
 
-import interface_adapter.homescreen.HomescreenController;
-import interface_adapter.homescreen.HomescreenPresenter;
+import use_case.browselandmarks.BrowseLandmarksInputBoundary;
+import use_case.browselandmarks.BrowseLandmarksInteractor;
 import use_case.homescreen.HomescreenInputBoundary;
 import use_case.homescreen.HomescreenInteractor;
 import use_case.homescreen.HomescreenOutputBoundary;
+import use_case.login.LoginInputBoundary;
+import use_case.login.LoginInteractor;
+import use_case.login.LoginOutputBoundary;
+import use_case.selectedplace.SelectedPlaceInputBoundary;
+import use_case.selectedplace.SelectedPlaceInteractor;
+import use_case.selectedplace.SelectedPlaceOutputBoundary;
+import use_case.signup.SignupInputBoundary;
+import use_case.signup.SignupInteractor;
+import use_case.signup.SignupOutputBoundary;
+// NEW imports for Notes use case
+import use_case.addnotes.AddNotesInputBoundary;
+import use_case.addnotes.AddNotesInteractor;
+import use_case.addnotes.AddNotesOutputBoundary;
 
-
-import interface_adapter.homescreen.HomescreenViewModel;
+import view.BrowseLandmarksView;
 import view.HomescreenView;
+import view.LoginView;
+import view.SelectedPlaceView;
+import view.SignupView;
+import view.ViewManager;
+// NEW Notes view
+import view.AddNotesView;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class AppBuilder {
+
     private final JPanel cardPanel = new JPanel();
     private final CardLayout cardLayout = new CardLayout();
 
-    // Core app components
+    // core
     private final UserFactory userFactory = new UserFactory();
     private final ViewManagerModel viewManagerModel = new ViewManagerModel();
-    private final ViewManager viewManager = new ViewManager(cardPanel, cardLayout, viewManagerModel);
+    @SuppressWarnings("unused")
+    private final ViewManager viewManager =
+            new ViewManager(cardPanel, cardLayout, viewManagerModel);
 
-    // DAO version using local csv file storage
+    private final LandmarkDataAccessInterface landmarkDAO =
+            new JsonLandmarkDataAccessObject("minimal_landmarks.json");
+
     private final UserDataAccessInterface userDataAccessObject =
-            new FileUserDataAccessObject("users.csv", userFactory);
+            new JsonUserDataAccessObject("users.json", userFactory, landmarkDAO);
 
-    // DAO version using local json file storage
-//    private final UserDataAccessInterface userDataAccessObject =
-//            new JSONFileUserDataAccessObject("users.json");
-
-    // Views & ViewModels
+    // ---- view models & views ----
     private LoginViewModel loginViewModel;
     private LoginView loginView;
-    private BrowseLandmarksViewModel browseLandmarksViewModel;
-    private BrowseLandmarksView browseLandmarksView;
+
     private SignupViewModel signupViewModel;
     private SignupView signupView;
+
     private HomescreenViewModel homescreenViewModel;
     private HomescreenView homescreenView;
 
-    private BrowseLandmarksPresenter browseLandmarksPresenter;
-    private LandmarkDataAccessInterface landmarkDAO;
-    private BrowseLandmarksInteractor browseLandmarksInteractor;
+    private BrowseLandmarksViewModel browseLandmarksViewModel;
+    private BrowseLandmarksView browseLandmarksView;
+
+    private SelectedPlaceViewModel selectedPlaceViewModel;
+    private SelectedPlaceView selectedPlaceView;
+
+    // NEW: notes VM + view
+    private AddNotesViewModel notesViewModel;
+    private AddNotesView notesView;
+
+    // ---- use case controllers ----
+    private SelectedPlaceController selectedPlaceController;
     private BrowseLandmarksController browseLandmarksController;
+    // NEW: notes controller
+    private AddNotesController notesController;
 
     public AppBuilder() {
         cardPanel.setLayout(cardLayout);
     }
 
-    // === View registrations ===
+    // === VIEW REGISTRATION ===
+
     public AppBuilder addLoginView() {
         loginViewModel = new LoginViewModel();
         loginView = new LoginView(loginViewModel, viewManagerModel);
@@ -85,23 +116,11 @@ public class AppBuilder {
 
     public AppBuilder addHomescreenView() {
         homescreenViewModel = new HomescreenViewModel();
-        homescreenView = new HomescreenView(homescreenViewModel, viewManagerModel);  // Keep this
+        homescreenView = new HomescreenView(homescreenViewModel, viewManagerModel);
         cardPanel.add(homescreenView, homescreenView.getViewName());
         return this;
     }
 
-    public AppBuilder addBrowseLandmarksView() {
-        browseLandmarksViewModel = new BrowseLandmarksViewModel();
-        browseLandmarksPresenter = new BrowseLandmarksPresenter(browseLandmarksViewModel);
-        landmarkDAO = new JsonFileLandmarkDataAccessObject("minimal_landmarks.json");
-        browseLandmarksInteractor = new BrowseLandmarksInteractor(landmarkDAO, browseLandmarksPresenter);
-        browseLandmarksController =  new BrowseLandmarksController(browseLandmarksInteractor);
-        browseLandmarksView = new BrowseLandmarksView(browseLandmarksViewModel, browseLandmarksController, viewManagerModel);
-        cardPanel.add(browseLandmarksView, browseLandmarksView.getViewName());
-        return this;
-    }
-
-    // New method for signup view
     public AppBuilder addSignupView() {
         signupViewModel = new SignupViewModel();
         signupView = new SignupView(signupViewModel, viewManagerModel);
@@ -109,66 +128,127 @@ public class AppBuilder {
         return this;
     }
 
-    // New method for signup use case
-    public AppBuilder addSignupUseCase() {
-        final SignupOutputBoundary signupOutputBoundary = new SignupPresenter(
-                viewManagerModel,
-                signupViewModel,
-                loginViewModel
-        );
+    // NEW: Notes view (no use case yet)
+    public AppBuilder addNotesView() {
+        notesViewModel = new AddNotesViewModel();
+        notesView = new AddNotesView(notesViewModel, viewManagerModel);
+        cardPanel.add(notesView, notesView.getViewName());
+        return this;
+    }
 
-        final SignupInputBoundary signupInteractor = new SignupInteractor(
-                userDataAccessObject,
-                signupOutputBoundary,
-                userFactory
-        );
+    /** Create ONLY SelectedPlaceView (no use case yet). */
+    public AppBuilder addSelectedPlaceView() {
+        selectedPlaceViewModel = new SelectedPlaceViewModel();
+        selectedPlaceView = new SelectedPlaceView(selectedPlaceViewModel, viewManagerModel);
+        cardPanel.add(selectedPlaceView, selectedPlaceView.getViewName());
+        return this;
+    }
 
-        final SignupController signupController = new SignupController(signupInteractor);
+    /** Wire SelectedPlace Use Case + Controller.
+     *
+     *  NOTE: assumes notesViewModel is already created (call addNotesView() first).
+     */
+    public AppBuilder addSelectedPlaceUseCase() {
+        SelectedPlaceOutputBoundary spPresenter =
+                // constructor now also receives notesViewModel
+                new SelectedPlacePresenter(selectedPlaceViewModel, notesViewModel, viewManagerModel);
 
-        signupView.setSignupController(signupController);
+        SelectedPlaceInputBoundary spInteractor =
+                new SelectedPlaceInteractor(landmarkDAO, userDataAccessObject, spPresenter);
+
+        selectedPlaceController = new SelectedPlaceController(spInteractor);
+        selectedPlaceView.setSelectedPlaceController(selectedPlaceController);
 
         return this;
     }
-    // new method for homescreen use case
+
+    /** BrowseLandmarks depends on selectedPlaceController. */
+    public AppBuilder addBrowseLandmarksView() {
+        browseLandmarksViewModel = new BrowseLandmarksViewModel();
+        BrowseLandmarksPresenter presenter =
+                new BrowseLandmarksPresenter(browseLandmarksViewModel);
+
+        BrowseLandmarksInputBoundary interactor =
+                new BrowseLandmarksInteractor(landmarkDAO, presenter, userDataAccessObject);
+
+        browseLandmarksController = new BrowseLandmarksController(interactor);
+
+        browseLandmarksView = new BrowseLandmarksView(
+                browseLandmarksViewModel,
+                browseLandmarksController,
+                selectedPlaceController,     // uses same controller for “select place”
+                viewManagerModel
+        );
+
+        cardPanel.add(browseLandmarksView, browseLandmarksView.getViewName());
+        return this;
+    }
+
+    // === USE CASE WIRING ===
+
+    public AppBuilder addSignupUseCase() {
+        SignupOutputBoundary output =
+                new SignupPresenter(viewManagerModel, signupViewModel, loginViewModel);
+
+        SignupInputBoundary interactor =
+                new SignupInteractor(userDataAccessObject, output, userFactory);
+
+        SignupController controller = new SignupController(interactor);
+        signupView.setSignupController(controller);
+        return this;
+    }
+
     public AppBuilder addHomescreenUseCase() {
-        final HomescreenOutputBoundary homescreenOutputBoundary =
+        HomescreenOutputBoundary output =
                 new HomescreenPresenter(homescreenViewModel, viewManagerModel, browseLandmarksViewModel);
 
-        final HomescreenInputBoundary homescreenInteractor =
-                new HomescreenInteractor(homescreenOutputBoundary);
+        HomescreenInputBoundary interactor =
+                new HomescreenInteractor(output);
 
-        final HomescreenController homescreenController =
-                new HomescreenController(homescreenInteractor);
+        HomescreenController controller =
+                new HomescreenController(interactor);
 
-        homescreenView.setHomescreenController(homescreenController);
-
+        homescreenView.setHomescreenController(controller);
         return this;
     }
 
-    // === Use case wiring ===
     public AppBuilder addLoginUseCase() {
-        final LoginOutputBoundary loginOutputBoundary =
-                new LoginPresenter(viewManagerModel, homescreenViewModel, loginViewModel);
+        LoginOutputBoundary output =
+                new LoginPresenter(viewManagerModel, homescreenViewModel, loginViewModel, userDataAccessObject);
 
-        final LoginInputBoundary loginInteractor =
-                new LoginInteractor(userDataAccessObject, loginOutputBoundary);
+        LoginInputBoundary interactor =
+                new LoginInteractor(userDataAccessObject, output);
 
-        LoginController loginController = new LoginController(loginInteractor);
-        loginView.setLoginController(loginController);
+        LoginController controller =
+                new LoginController(interactor);
+
+        loginView.setLoginController(controller);
         return this;
     }
 
-    // === Build the final JFrame ===
+    // NEW: Notes use case wiring (for Add Note button)
+    public AppBuilder addNotesUseCase() {
+        AddNotesOutputBoundary notesOutput =
+                new AddNotesPresenter(notesViewModel, viewManagerModel);
+
+        AddNotesInputBoundary notesInteractor =
+                new AddNotesInteractor(userDataAccessObject, landmarkDAO, notesOutput);
+
+        notesController = new AddNotesController(notesInteractor, notesViewModel);
+        notesView.setNotesController(notesController);
+        return this;
+    }
+
+    // === BUILD ===
+
     public JFrame build() {
-        final JFrame application = new JFrame("User Login Example");
-        application.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        JFrame app = new JFrame("User Login Example");
+        app.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        app.add(cardPanel);
 
-        application.add(cardPanel);
-
-        // Start on the login view
         viewManagerModel.setState(loginView.getViewName());
         viewManagerModel.firePropertyChange();
 
-        return application;
+        return app;
     }
 }

@@ -4,6 +4,7 @@ import interface_adapter.ViewManagerModel;
 import interface_adapter.browselandmarks.BrowseLandmarksController;
 import interface_adapter.browselandmarks.BrowseLandmarksState;
 import interface_adapter.browselandmarks.BrowseLandmarksViewModel;
+import interface_adapter.selectedplace.SelectedPlaceController;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,15 +21,18 @@ public class BrowseLandmarksView extends JPanel implements PropertyChangeListene
     private final DefaultListModel<String> listModel = new DefaultListModel<>();
     private final JList<String> landmarkList = new JList<>(listModel);
     private final StaticMapPanel mapPanel = new StaticMapPanel();
+    private final SelectedPlaceController selectedPlaceController;
 
     private JLabel usernameLabel;
 
     public BrowseLandmarksView(BrowseLandmarksViewModel viewModel,
                                BrowseLandmarksController controller,
+                               SelectedPlaceController selectedPlaceController,
                                ViewManagerModel viewManagerModel) {
         this.viewModel = viewModel;
         this.controller = controller;
         this.viewManagerModel = viewManagerModel;
+        this.selectedPlaceController = selectedPlaceController;
 
         this.viewModel.addPropertyChangeListener(this);
 
@@ -144,7 +148,11 @@ public class BrowseLandmarksView extends JPanel implements PropertyChangeListene
             if (!e.getValueIsAdjusting()) {
                 String name = landmarkList.getSelectedValue();
                 if (name != null) {
-                    System.out.println("List clicked: " + name);
+                    String username = viewModel.getState().getUsername();
+                    selectedPlaceController.selectPlace(username, name);
+
+                    SwingUtilities.invokeLater(() -> landmarkList.clearSelection());
+
                 }
             }
         });
