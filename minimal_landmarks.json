@@ -98,6 +98,61 @@
     "name": "Wallberg Memorial Building",
     "latitude": 43.6592,
     "longitude": -79.3953
+  },
+  {
+    "name": "Bancroft Building",
+    "latitude": 43.6608,
+    "longitude": -79.3997
+  },
+  {
+    "name": "Clara Benson Building",
+    "latitude": 43.6630,
+    "longitude": -79.4003
+  },
+  {
+    "name": "Dentistry Building",
+    "latitude": 43.6563,
+    "longitude": -79.3873
+  },
+  {
+    "name": "Galbraith Building",
+    "latitude": 43.6598,
+    "longitude": -79.3963
+  },
+  {
+    "name": "Haultain Building",
+    "latitude": 43.6599,
+    "longitude": -79.3936
+  },
+  {
+    "name": "Health Sciences Building",
+    "latitude": 43.6590,
+    "longitude": -79.3925
+  },
+  {
+    "name": "Koffler House",
+    "latitude": 43.6605,
+    "longitude": -79.4008
+  },
+  {
+    "name": "Lassonde Mining Building",
+    "latitude": 43.6595,
+    "longitude": -79.3934
+  },
+  {
+    "name": "Schwartz Reisman Innovation Campus West",
+    "latitude": 43.6603,
+    "longitude": -79.3891
+  },
+  {
+    "name": "Knox College Caven Library",
+    "latitude": 43.6614,
+    "longitude": -79.3966
+  },
+  {
+    "name": "Student Commons",
+    "latitude": 43.6585,
+    "longitude": -79.3979
   }
 
 ]
