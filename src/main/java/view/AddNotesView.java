@@ -143,10 +143,10 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
         notesList.setVisibleRowCount(6);
         JScrollPane notesScroll = new JScrollPane(notesList);
         notesScroll.setAlignmentX(Component.LEFT_ALIGNMENT);
-        notesScroll.setPreferredSize(new Dimension(350, 150));
+        notesScroll.setPreferredSize(new Dimension(300, 150));
 
         // typing area
-        descriptionArea = new JTextArea(5, 25);
+        descriptionArea = new JTextArea(5, 21);
         descriptionArea.setLineWrap(true);
         descriptionArea.setWrapStyleWord(true);
         descriptionArea.setFont(new Font("Arial", Font.PLAIN, 14));
@@ -184,10 +184,10 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
         JPanel rightPanel = new JPanel();
         rightPanel.setBackground(Color.WHITE);
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-        rightPanel.setBorder(BorderFactory.createEmptyBorder(40, 20, 40, 60));
+        rightPanel.setBorder(BorderFactory.createEmptyBorder(40, 0, 40, 60));
 
         imageLabel = new JLabel();
-        imageLabel.setPreferredSize(new Dimension(600, 300));
+        imageLabel.setSize(new Dimension(300, 200));
         imageLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         setPlaceholderImage();  // start with placeholder
 
@@ -223,7 +223,15 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
 
         // attach panels
         centerPanel.add(leftPanel);
-        centerPanel.add(rightPanel);
+        JScrollPane scroll = new JScrollPane(
+                rightPanel,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
+        );
+        scroll.getVerticalScrollBar().setUnitIncrement(16); // smoother scrolling
+        scroll.setBorder(null);
+
+        centerPanel.add(scroll);
 
         add(topBar, BorderLayout.NORTH);
         add(centerPanel, BorderLayout.CENTER);
@@ -248,7 +256,16 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
         landmarkNameLabel.setText(state.getLandmarkName());
         descriptionRight.setText(state.getLandmarkDescription());
         addressLabel.setText(state.getAddress());
-        hoursLabel.setText("Hours: " + state.getOpenHours());
+        // ---- format hours on multiple lines ----
+        String openHours = state.getOpenHours();
+        if (openHours == null || openHours.isBlank() || "No hours available".equals(openHours)) {
+            hoursLabel.setText("Hours: No hours available");
+        } else {
+            // Convert "\n" to "<br>" and wrap in HTML so JLabel shows line breaks
+            String htmlHours =
+                    "<html>Hours:<br>" + openHours.replace("\n", "<br>") + "</html>";
+            hoursLabel.setText(htmlHours);
+        }
 
         // ===== UPDATE NOTES LIST (ONLY THIS USER’S NOTES) =====
         notesListModel.clear();
