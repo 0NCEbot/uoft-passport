@@ -246,7 +246,7 @@ public class AppBuilder {
     // === BUILD ===
 
     public JFrame build() {
-        JFrame app = new JFrame("User Login Example");
+        JFrame app = new JFrame("UofT Passport");
         app.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         app.add(cardPanel);
 
