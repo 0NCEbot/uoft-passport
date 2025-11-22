@@ -17,6 +17,8 @@ public class Main {
                 .addLoginUseCase()
                 .addSignupUseCase()
                 .addHomescreenUseCase()
+                .addPlanRouteView()
+                .addPlanRouteUseCase()
                 .build();
 
         application.pack();

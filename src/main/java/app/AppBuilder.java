@@ -4,6 +4,9 @@ import data_access.JsonUserDataAccessObject;
 import data_access.JsonLandmarkDataAccessObject;
 import data_access.LandmarkDataAccessInterface;
 import data_access.UserDataAccessInterface;
+import data_access.MapsRouteDataAccessObject;
+import data_access.RouteDataAccessInterface;
+
 import entity.UserFactory;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.browselandmarks.BrowseLandmarksController;
@@ -25,6 +28,10 @@ import interface_adapter.signup.SignupViewModel;
 import interface_adapter.addnotes.AddNotesController;
 import interface_adapter.addnotes.AddNotesPresenter;
 import interface_adapter.addnotes.AddNotesViewModel;
+// imports for Plan Route
+import interface_adapter.planroute.PlanRouteController;
+import interface_adapter.planroute.PlanRoutePresenter;
+import interface_adapter.planroute.PlanRouteViewModel;
 
 import use_case.browselandmarks.BrowseLandmarksInputBoundary;
 import use_case.browselandmarks.BrowseLandmarksInteractor;
@@ -44,6 +51,10 @@ import use_case.signup.SignupOutputBoundary;
 import use_case.addnotes.AddNotesInputBoundary;
 import use_case.addnotes.AddNotesInteractor;
 import use_case.addnotes.AddNotesOutputBoundary;
+// imports for Plan Route
+import use_case.planroute.PlanRouteInputBoundary;
+import use_case.planroute.PlanRouteInteractor;
+import use_case.planroute.PlanRouteOutputBoundary;
 
 import view.BrowseLandmarksView;
 import view.HomescreenView;
@@ -53,6 +64,7 @@ import view.SignupView;
 import view.ViewManager;
 // NEW Notes view
 import view.AddNotesView;
+import view.PlanRouteView;
 
 import javax.swing.*;
 import java.awt.*;
@@ -100,6 +112,10 @@ public class AppBuilder {
     private BrowseLandmarksController browseLandmarksController;
     // NEW: notes controller
     private AddNotesController notesController;
+
+    private PlanRouteViewModel planRouteViewModel;
+    private PlanRouteView planRouteView;
+    private PlanRouteController planRouteController;
 
     public AppBuilder() {
         cardPanel.setLayout(cardLayout);
@@ -188,6 +204,13 @@ public class AppBuilder {
         return this;
     }
 
+    public AppBuilder addPlanRouteView() {
+        planRouteViewModel = new PlanRouteViewModel();
+        planRouteView = new PlanRouteView(planRouteViewModel, viewManagerModel);
+        cardPanel.add(planRouteView, planRouteView.getViewName());
+        return this;
+    }
+
     // === USE CASE WIRING ===
 
     public AppBuilder addSignupUseCase() {
@@ -240,6 +263,23 @@ public class AppBuilder {
 
         notesController = new AddNotesController(notesInteractor, notesViewModel);
         notesView.setNotesController(notesController);
+        return this;
+    }
+
+
+    public AppBuilder addPlanRouteUseCase() {
+        RouteDataAccessInterface routeDAO =
+                new MapsRouteDataAccessObject();
+
+        PlanRouteOutputBoundary presenter =
+                new PlanRoutePresenter(planRouteViewModel, viewManagerModel);
+
+        PlanRouteInputBoundary interactor =
+                new PlanRouteInteractor(routeDAO, landmarkDAO, presenter);
+
+        planRouteController = new PlanRouteController(interactor, planRouteViewModel);
+        planRouteView.setPlanRouteController(planRouteController);
+
         return this;
     }
 
