@@ -103,14 +103,18 @@ public class MapsRouteDataAccessObject implements RouteDataAccessInterface {
     private String buildRouteRequest(Location start, Location destination, String[] intermediates) {
         JSONObject request = new JSONObject();
 
-        // Origin
+        // Origin - FIXED: wrap in "location" object with "latLng"
         JSONObject origin = new JSONObject();
-        origin.put("location", createLatLngJson(start));
+        JSONObject originLocation = new JSONObject();
+        originLocation.put("latLng", createLatLngJson(start));
+        origin.put("location", originLocation);
         request.put("origin", origin);
 
-        // Destination
+        // Destination - FIXED: wrap in "location" object with "latLng"
         JSONObject dest = new JSONObject();
-        dest.put("location", createLatLngJson(destination));
+        JSONObject destLocation = new JSONObject();
+        destLocation.put("latLng", createLatLngJson(destination));
+        dest.put("location", destLocation);
         request.put("destination", dest);
 
         // Intermediate waypoints (if any)
@@ -120,7 +124,9 @@ public class MapsRouteDataAccessObject implements RouteDataAccessInterface {
                 Location intermediateLoc = resolveLandmarkToLocation(intermediateName);
                 if (intermediateLoc != null) {
                     JSONObject waypoint = new JSONObject();
-                    waypoint.put("location", createLatLngJson(intermediateLoc));
+                    JSONObject waypointLocation = new JSONObject();
+                    waypointLocation.put("latLng", createLatLngJson(intermediateLoc));
+                    waypoint.put("location", waypointLocation);
                     waypoints.put(waypoint);
                 }
             }
@@ -160,10 +166,13 @@ public class MapsRouteDataAccessObject implements RouteDataAccessInterface {
                 .build();
 
         try (Response response = httpClient.newCall(request).execute()) {
-//            if (!response.isSuccessful() || response.body() == null) {
-//                System.out.println("[ROUTE DAO] API call failed: " + response.code());
-//                return null;
-//            }
+            if (!response.isSuccessful() || response.body() == null) {
+                System.out.println("[ROUTE DAO] API call failed: " + response.code());
+                if (response.body() != null) {
+                    System.out.println("[ROUTE DAO] Error: " + response.body().string());
+                }
+                return null;
+            }
 
             String responseData = response.body().string();
             System.out.println("[ROUTE DAO] API Response received");
@@ -237,8 +246,10 @@ public class MapsRouteDataAccessObject implements RouteDataAccessInterface {
             if (navInstruction != null) {
                 String instructions = navInstruction.optString("instructions", "");
                 if (!instructions.isEmpty()) {
-                    // Remove newlines for single-line display
-                    return instructions.replace("\n", " ");
+                    // Replace newlines with dashes for better readability
+                    // e.g., "Turn left\nRestricted usage road\nDestination will be on the right"
+                    //    -> "Turn left - Restricted usage road - Destination will be on the right"
+                    return instructions.replace("\n", " - ");
                 }
             }
         } catch (Exception e) {
