@@ -12,9 +12,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.awt.image.BufferedImage;
 import java.awt.geom.RoundRectangle2D;
-import javax.imageio.ImageIO;
-import java.io.File;
-import java.io.IOException;
+
 
 public class HomescreenView extends JPanel implements PropertyChangeListener {
     private final String viewName = "homescreen";
@@ -35,12 +33,24 @@ public class HomescreenView extends JPanel implements PropertyChangeListener {
 
 
         //(top panel)- username area
-        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        topPanel.setBackground(Color.WHITE);
-        topPanel.setPreferredSize(new Dimension(getWidth(), 50));
-        usernameLabel = new JLabel("placeholder_username");
+        JPanel topBar = new JPanel(new BorderLayout());
+        topBar.setBackground(Color.WHITE);
+        topBar.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+
+        JPanel userPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        userPanel.setOpaque(false);
+        usernameLabel = new JLabel("Username1!");
         usernameLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-        topPanel.add(usernameLabel);
+        usernameLabel.setForeground(new Color(0, 102, 204));
+        userPanel.add(usernameLabel);
+
+        JLabel logoutLabel = new JLabel("Logout");
+        logoutLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        logoutLabel.setForeground(new Color(0, 102, 204));
+        logoutLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        topBar.add(userPanel, BorderLayout.WEST);
+        topBar.add(logoutLabel, BorderLayout.EAST);
 
         //(bottom panel)- back button area
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -139,7 +149,7 @@ public class HomescreenView extends JPanel implements PropertyChangeListener {
         centerPanel.add(rightPanel);
 
         //add all panels to main layout
-        add(topPanel, BorderLayout.NORTH);
+        add(topBar, BorderLayout.NORTH);
         add(centerPanel, BorderLayout.CENTER);
         add(bottomPanel, BorderLayout.SOUTH);
     }
