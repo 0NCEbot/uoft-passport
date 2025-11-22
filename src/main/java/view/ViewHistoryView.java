@@ -32,6 +32,8 @@ public class ViewHistoryView extends JPanel implements PropertyChangeListener {
     private JLabel titleLabel;
     private DefaultListModel<String> visitListModel;
     private JList<String> visitList;
+    private JScrollPane scrollPane;
+    private JButton undoButton;
     private JLabel messageLabel;
     private JLabel emptyStateLabel;
     private JPanel emptyStatePanel;
@@ -120,8 +122,8 @@ public class ViewHistoryView extends JPanel implements PropertyChangeListener {
                 + "You haven't visited any landmarks!<br/>"
                 + "Visit a landmark and check in for the first time!"
                 + "</div></html>");
-        emptyStateLabel.setFont(new Font("Arial", Font.PLAIN, 18));
-        emptyStateLabel.setForeground(Color.GRAY);
+        emptyStateLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        emptyStateLabel.setForeground(new Color(100, 100, 100));
         emptyStateLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         emptyStateLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
@@ -137,13 +139,13 @@ public class ViewHistoryView extends JPanel implements PropertyChangeListener {
         visitList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         visitList.setFixedCellHeight(40);
 
-        JScrollPane scrollPane = new JScrollPane(visitList);
+        scrollPane = new JScrollPane(visitList);
         scrollPane.setAlignmentX(Component.LEFT_ALIGNMENT);
         scrollPane.setPreferredSize(new Dimension(600, 400));
         scrollPane.setMaximumSize(new Dimension(800, 500));
 
         // Undo button
-        JButton undoButton = new JButton("Undo Visit");
+        undoButton = new JButton("Undo Visit");
         undoButton.setFont(new Font("Arial", Font.PLAIN, 16));
         undoButton.setAlignmentX(Component.LEFT_ALIGNMENT);
         undoButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -288,12 +290,15 @@ public class ViewHistoryView extends JPanel implements PropertyChangeListener {
                 String displayText = visit.landmarkName + " - " + visit.visitedAt;
                 visitListModel.addElement(displayText);
             }
+            // Show visit list and undo button
             emptyStatePanel.setVisible(false);
-            visitList.setVisible(true);
+            scrollPane.setVisible(true);
+            undoButton.setVisible(true);
         } else {
-            // Show empty state
+            // Show empty state, hide visit list and undo button
             emptyStatePanel.setVisible(true);
-            visitList.setVisible(false);
+            scrollPane.setVisible(false);
+            undoButton.setVisible(false);
         }
 
         // Update messages
