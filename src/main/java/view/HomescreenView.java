@@ -123,7 +123,7 @@ public class HomescreenView extends JPanel implements PropertyChangeListener {
 
         //load and scale the image
         ImageIcon originalIcon = new ImageIcon("src/main/resources/placeholder_img2.png");
-        Image scaledImage = originalIcon.getImage().getScaledInstance(400, 400, Image.SCALE_SMOOTH);
+        Image scaledImage = originalIcon.getImage().getScaledInstance(300, 400, Image.SCALE_SMOOTH);
 
         // Create rounded image
         BufferedImage roundedImage = createRoundedImage(scaledImage, 30); // 30 = corner radius
@@ -188,7 +188,7 @@ public class HomescreenView extends JPanel implements PropertyChangeListener {
         // Safety check
         if (width <= 0 || height <= 0) {
             // Return a default image or handle error
-            BufferedImage defaultImage = new BufferedImage(400, 400, BufferedImage.TYPE_INT_ARGB);
+            BufferedImage defaultImage = new BufferedImage(30, 400, BufferedImage.TYPE_INT_ARGB);
             return defaultImage;
         }
 
