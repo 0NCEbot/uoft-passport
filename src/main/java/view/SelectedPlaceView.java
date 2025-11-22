@@ -188,6 +188,7 @@ public class SelectedPlaceView extends JPanel implements PropertyChangeListener 
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
         );
         scroll.getVerticalScrollBar().setUnitIncrement(16);
+        scroll.getHorizontalScrollBar().setUnitIncrement(16);
         scroll.setBorder(null);
 
         scrollWrapper.add(scroll, BorderLayout.CENTER);
