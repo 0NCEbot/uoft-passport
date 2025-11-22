@@ -10,6 +10,11 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.awt.image.BufferedImage;
+import java.awt.geom.RoundRectangle2D;
+import javax.imageio.ImageIO;
+import java.io.File;
+import java.io.IOException;
 
 public class HomescreenView extends JPanel implements PropertyChangeListener {
     private final String viewName = "homescreen";
@@ -111,8 +116,8 @@ public class HomescreenView extends JPanel implements PropertyChangeListener {
         rightPanel.setBackground(Color.WHITE);
 
         //load and scale the image
-        ImageIcon originalIcon = new ImageIcon("src/main/resources/placeholder_img.png");
-        Image scaledImage = originalIcon.getImage().getScaledInstance(600, 400, Image.SCALE_SMOOTH);
+        ImageIcon originalIcon = new ImageIcon("src/main/resources/placeholder_img2.png");
+        Image scaledImage = originalIcon.getImage().getScaledInstance(400, 400, Image.SCALE_SMOOTH);
         ImageIcon scaledIcon = new ImageIcon(scaledImage);
         JLabel imageLabel = new JLabel();
         imageLabel.setIcon(scaledIcon);
