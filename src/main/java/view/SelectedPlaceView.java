@@ -101,7 +101,7 @@ public class SelectedPlaceView extends JPanel implements PropertyChangeListener 
         JPanel leftPanel = new JPanel();
         leftPanel.setBackground(Color.WHITE);
         leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
-        leftPanel.setBorder(BorderFactory.createEmptyBorder(0, 60, 0, 20));
+        leftPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
 
         checkInButton = createBigButton("Check In");
         JButton notesButton = createBigButton("Notes");
@@ -122,6 +122,8 @@ public class SelectedPlaceView extends JPanel implements PropertyChangeListener 
         notesButton.addActionListener(e -> {
             if (controller != null) controller.notes();
         });
+        checkInButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        notesButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         leftPanel.add(Box.createVerticalGlue());
         leftPanel.add(checkInButton);
@@ -133,10 +135,12 @@ public class SelectedPlaceView extends JPanel implements PropertyChangeListener 
         JPanel rightPanel = new JPanel();
         rightPanel.setBackground(Color.WHITE);
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-        rightPanel.setBorder(BorderFactory.createEmptyBorder(40, 20, 40, 60));
+        // add right margin so it doesn't touch scrollbar
+        rightPanel.setBorder(BorderFactory.createEmptyBorder(40, 0, 40, 40));
 
         imageLabel = new JLabel();
-        imageLabel.setPreferredSize(new Dimension(600, 300));
+        // preferred size so the scroll pane/BoxLayout respects it
+        imageLabel.setPreferredSize(new Dimension(350, 220));
         imageLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         // start with placeholder
         setPlaceholderImage();
@@ -172,7 +176,16 @@ public class SelectedPlaceView extends JPanel implements PropertyChangeListener 
         rightPanel.add(hoursLabel);
 
         centerPanel.add(leftPanel);
-        centerPanel.add(rightPanel);
+        JScrollPane scroll = new JScrollPane(
+                rightPanel,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+        );
+        scroll.getVerticalScrollBar().setUnitIncrement(16); // smoother scrolling
+        // optional outer padding instead of default border
+        scroll.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 20));
+
+        centerPanel.add(scroll);
 
         add(topBar, BorderLayout.NORTH);
         add(centerPanel, BorderLayout.CENTER);
@@ -205,7 +218,18 @@ public class SelectedPlaceView extends JPanel implements PropertyChangeListener 
         landmarkNameLabel.setText(state.getLandmarkName());
         descriptionArea.setText(state.getDescription());
         addressLabel.setText(state.getAddress());
-        hoursLabel.setText("Hours: " + state.getOpenHours());
+
+        // ---- format hours on multiple lines ----
+        String openHours = state.getOpenHours();
+        if (openHours == null || openHours.isBlank() || "No hours available".equals(openHours)) {
+            hoursLabel.setText("Hours: No hours available");
+        } else {
+            // Convert "\n" to "<br>" and wrap in HTML so JLabel shows line breaks
+            String htmlHours =
+                    "<html>Hours:<br>" + openHours.replace("\n", "<br>") + "</html>";
+            hoursLabel.setText(htmlHours);
+        }
+        // ----------------------------------------
 
         // reset Check In button appearance
         if (checkInButton != null) {
@@ -221,6 +245,7 @@ public class SelectedPlaceView extends JPanel implements PropertyChangeListener 
         loadPhotoForLandmarkAsync(state.getLandmarkName());
     }
 
+
     public String getViewName() {
         return viewName;
     }
@@ -229,7 +254,7 @@ public class SelectedPlaceView extends JPanel implements PropertyChangeListener 
 
     private void setPlaceholderImage() {
         ImageIcon img = new ImageIcon("src/main/resources/placeholder_landmark.jpg");
-        Image scaled = img.getImage().getScaledInstance(600, 300, Image.SCALE_SMOOTH);
+        Image scaled = img.getImage().getScaledInstance(350, 220, Image.SCALE_SMOOTH);
         imageLabel.setIcon(new ImageIcon(scaled));
     }
 
@@ -343,7 +368,7 @@ public class SelectedPlaceView extends JPanel implements PropertyChangeListener 
             }
             byte[] bytes = response.body().bytes();
             ImageIcon icon = new ImageIcon(bytes);
-            Image scaled = icon.getImage().getScaledInstance(600, 300, Image.SCALE_SMOOTH);
+            Image scaled = icon.getImage().getScaledInstance(350, 220, Image.SCALE_SMOOTH);
             return new ImageIcon(scaled);
         }
     }
