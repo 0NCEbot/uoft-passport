@@ -81,21 +81,21 @@ public class PlanRouteView extends JPanel implements PropertyChangeListener {
         titleLabel.setFont(new Font("Arial", Font.BOLD, 28));
         titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel startLabel = new JLabel("Start Location:");
+        JLabel startLabel = new JLabel("Start Landmark:");
         startLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         startLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         startLocationField = new JTextField(25);
         startLocationField.setMaximumSize(new Dimension(300, 30));
         startLocationField.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel destLabel = new JLabel("Destination:");
+        JLabel destLabel = new JLabel("End Landmark:");
         destLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         destLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         destinationField = new JTextField(25);
         destinationField.setMaximumSize(new Dimension(300, 30));
         destinationField.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel intermediateLabel = new JLabel("Intermediate Stops (comma-separated):");
+        JLabel intermediateLabel = new JLabel("<html>Intermediate Landmarks:<br>(comma-separated, optional)</html>");
         intermediateLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         intermediateLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         intermediateStopsField = new JTextField(25);
