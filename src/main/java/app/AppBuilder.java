@@ -1,14 +1,6 @@
 package app;
 
-import entity.UserFactory;
-import interface_adapter.ViewManagerModel;
-import interface_adapter.browselandmarks.*;
-import interface_adapter.homescreen.*;
-import interface_adapter.login.*;
-import interface_adapter.myprogress.*;
-import interface_adapter.selectedplace.*;
-import interface_adapter.signup.*;
-import interface_adapter.addnotes.*;
+import data_access.*;
 import data_access.JsonUserDataAccessObject;
 import data_access.JsonLandmarkDataAccessObject;
 import data_access.LandmarkDataAccessInterface;
@@ -27,6 +19,7 @@ import interface_adapter.homescreen.HomescreenViewModel;
 import interface_adapter.login.LoginController;
 import interface_adapter.login.LoginPresenter;
 import interface_adapter.login.LoginViewModel;
+import interface_adapter.myprogress.*;
 import interface_adapter.selectedplace.SelectedPlaceController;
 import interface_adapter.selectedplace.SelectedPlacePresenter;
 import interface_adapter.selectedplace.SelectedPlaceViewModel;
@@ -235,11 +228,7 @@ public class AppBuilder {
     }
 
     public AppBuilder addHomescreenUseCase() {
-        HomescreenOutputBoundary output =
-                new HomescreenPresenter(homescreenViewModel,
-                        viewManagerModel,
-                        browseLandmarksViewModel);
-        HomescreenPresenter presenter =
+        HomescreenOutputBoundary presenter =
                 new HomescreenPresenter(homescreenViewModel, viewManagerModel, browseLandmarksViewModel);
 
         HomescreenInputBoundary interactor =
