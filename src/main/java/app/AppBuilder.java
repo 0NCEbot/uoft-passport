@@ -4,6 +4,9 @@ import data_access.JsonUserDataAccessObject;
 import data_access.JsonLandmarkDataAccessObject;
 import data_access.LandmarkDataAccessInterface;
 import data_access.UserDataAccessInterface;
+import data_access.MapsRouteDataAccessObject;
+import data_access.RouteDataAccessInterface;
+
 import entity.UserFactory;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.browselandmarks.BrowseLandmarksController;
@@ -25,6 +28,10 @@ import interface_adapter.signup.SignupViewModel;
 import interface_adapter.addnotes.AddNotesController;
 import interface_adapter.addnotes.AddNotesPresenter;
 import interface_adapter.addnotes.AddNotesViewModel;
+// imports for Plan Route
+import interface_adapter.planroute.PlanRouteController;
+import interface_adapter.planroute.PlanRoutePresenter;
+import interface_adapter.planroute.PlanRouteViewModel;
 // NEW imports for View History
 import interface_adapter.viewhistory.ViewHistoryController;
 import interface_adapter.viewhistory.ViewHistoryPresenter;
@@ -52,6 +59,10 @@ import use_case.signup.SignupOutputBoundary;
 import use_case.addnotes.AddNotesInputBoundary;
 import use_case.addnotes.AddNotesInteractor;
 import use_case.addnotes.AddNotesOutputBoundary;
+// imports for Plan Route
+import use_case.planroute.PlanRouteInputBoundary;
+import use_case.planroute.PlanRouteInteractor;
+import use_case.planroute.PlanRouteOutputBoundary;
 // NEW imports for View History use case
 import use_case.viewhistory.ViewHistoryInputBoundary;
 import use_case.viewhistory.ViewHistoryInteractor;
@@ -73,6 +84,7 @@ import view.SignupView;
 import view.ViewManager;
 // NEW Notes view
 import view.AddNotesView;
+import view.PlanRouteView;
 // NEW View History view
 import view.ViewHistoryView;
 // NEW View Progress view
@@ -136,6 +148,10 @@ public class AppBuilder {
     private ViewHistoryController viewHistoryController;
     // NEW: view progress controller
     private ViewProgressController viewProgressController;
+
+    private PlanRouteViewModel planRouteViewModel;
+    private PlanRouteView planRouteView;
+    private PlanRouteController planRouteController;
 
     public AppBuilder() {
         cardPanel.setLayout(cardLayout);
@@ -224,6 +240,13 @@ public class AppBuilder {
         return this;
     }
 
+    public AppBuilder addPlanRouteView() {
+        planRouteViewModel = new PlanRouteViewModel();
+        planRouteView = new PlanRouteView(planRouteViewModel, viewManagerModel);
+        cardPanel.add(planRouteView, planRouteView.getViewName());
+        return this;
+    }
+
     // === USE CASE WIRING ===
 
     public AppBuilder addSignupUseCase() {
@@ -289,6 +312,18 @@ public class AppBuilder {
         return this;
     }
 
+    public AppBuilder addPlanRouteUseCase() {
+        RouteDataAccessInterface routeDAO =
+                new MapsRouteDataAccessObject(landmarkDAO);
+
+        PlanRouteOutputBoundary presenter =
+                new PlanRoutePresenter(planRouteViewModel, viewManagerModel);
+
+        PlanRouteInputBoundary interactor =
+                new PlanRouteInteractor(routeDAO, landmarkDAO, presenter);
+
+        planRouteController = new PlanRouteController(interactor, planRouteViewModel);
+        planRouteView.setPlanRouteController(planRouteController);
     /**
      * Adds the View History view and wires the use cases.
      * This method creates and configures the view history screen with both
