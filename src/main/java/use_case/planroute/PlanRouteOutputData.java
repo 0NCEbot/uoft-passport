@@ -8,14 +8,16 @@ public class PlanRouteOutputData {
         public final String instruction;
         public final int distanceMeters;
         public final int durationSeconds;
-        public final String landmarkNearby;
+        public final String landmarkName;  // Non-null if this is a landmark step
+        public final boolean isLandmark;
 
         public RouteStepDTO(String instruction, int distanceMeters,
-                            int durationSeconds, String landmarkNearby) {
+                            int durationSeconds, String landmarkName, boolean isLandmark) {
             this.instruction = instruction;
             this.distanceMeters = distanceMeters;
             this.durationSeconds = durationSeconds;
-            this.landmarkNearby = landmarkNearby;
+            this.landmarkName = landmarkName;
+            this.isLandmark = isLandmark;
         }
     }
 

@@ -73,20 +73,29 @@ public class PlanRouteInteractor implements PlanRouteInputBoundary {
         List<PlanRouteOutputData.RouteStepDTO> manualSteps = new ArrayList<>();
 
         manualSteps.add(new PlanRouteOutputData.RouteStepDTO(
-                "Start at: " + start,
-                0, 0, null
+                "📍 " + start,
+                0, 0, start, true
         ));
 
         for (String intermediate : intermediates) {
             manualSteps.add(new PlanRouteOutputData.RouteStepDTO(
                     "Visit: " + intermediate,
-                    0, 0, null
+                    0, 0, null, false
+            ));
+            manualSteps.add(new PlanRouteOutputData.RouteStepDTO(
+                    "📍 " + intermediate,
+                    0, 0, intermediate, true
             ));
         }
 
         manualSteps.add(new PlanRouteOutputData.RouteStepDTO(
-                "End at: " + destination,
-                0, 0, null
+                "Navigate to: " + destination,
+                0, 0, null, false
+        ));
+
+        manualSteps.add(new PlanRouteOutputData.RouteStepDTO(
+                "📍 " + destination,
+                0, 0, destination, true
         ));
 
         PlanRouteOutputData output = new PlanRouteOutputData(
@@ -109,7 +118,8 @@ public class PlanRouteInteractor implements PlanRouteInputBoundary {
                     step.getInstruction(),
                     step.getDistance(),
                     step.getDuration(),
-                    null
+                    step.getLandmarkName(),
+                    step.isLandmark()
             ));
         }
         return dtos;

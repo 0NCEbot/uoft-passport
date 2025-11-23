@@ -33,7 +33,8 @@ public class PlanRouteView extends JPanel implements PropertyChangeListener {
 
     // Buttons
     private JButton planButton;
-    private JButton startRouteButton;
+    private JButton completeStepButton;
+    private JButton checkInButton;
 
     public PlanRouteView(PlanRouteViewModel viewModel,
                          ViewManagerModel viewManagerModel) {
@@ -177,7 +178,7 @@ public class PlanRouteView extends JPanel implements PropertyChangeListener {
         totalDurationLabel.setFont(new Font("Arial", Font.PLAIN, 16));
         totalDurationLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Steps list
+        // Steps list with custom renderer
         JLabel stepsLabel = new JLabel("Steps:");
         stepsLabel.setFont(new Font("Arial", Font.BOLD, 14));
         stepsLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -186,17 +187,92 @@ public class PlanRouteView extends JPanel implements PropertyChangeListener {
         stepsList = new JList<>(stepsListModel);
         stepsList.setFont(new Font("Arial", Font.PLAIN, 12));
         stepsList.setVisibleRowCount(8);
+
+        // Custom cell renderer for greyed-out completed steps
+        stepsList.setCellRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value,
+                                                          int index, boolean isSelected, boolean cellHasFocus) {
+                JLabel label = (JLabel) super.getListCellRendererComponent(
+                        list, value, index, isSelected, cellHasFocus);
+
+                // Check if this step is completed
+                PlanRouteState state = viewModel.getState();
+                if (state != null && index < state.getSteps().size()) {
+                    PlanRouteState.StepVM step = state.getSteps().get(index);
+                    if (step.completed) {
+                        label.setForeground(Color.GRAY);
+                        label.setFont(label.getFont().deriveFont(Font.ITALIC));
+                    } else if (index == state.getCurrentStepIndex()) {
+                        // Highlight current step
+                        label.setForeground(new Color(0, 102, 204));
+                        label.setFont(label.getFont().deriveFont(Font.BOLD));
+                    }
+                }
+
+                return label;
+            }
+        });
+
         JScrollPane stepsScroll = new JScrollPane(stepsList);
         stepsScroll.setAlignmentX(Component.LEFT_ALIGNMENT);
         stepsScroll.setPreferredSize(new Dimension(350, 200));
 
-        // Start route button
-        startRouteButton = new JButton("Start Route");
-        startRouteButton.setFont(new Font("Arial", Font.PLAIN, 14));
-        startRouteButton.setAlignmentX(Component.LEFT_ALIGNMENT);
-        startRouteButton.setMaximumSize(new Dimension(150, 35));
-        startRouteButton.setEnabled(false);
-        startRouteButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        // Action buttons panel
+        JPanel actionButtonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        actionButtonsPanel.setOpaque(false);
+        actionButtonsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        completeStepButton = new JButton("Complete Step");
+        completeStepButton.setFont(new Font("Arial", Font.PLAIN, 14));
+        completeStepButton.setEnabled(false);
+        completeStepButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        completeStepButton.addActionListener(e -> {
+            if (controller != null) {
+                controller.completeStep();
+            }
+        });
+
+        checkInButton = new JButton("Check In");
+        checkInButton.setFont(new Font("Arial", Font.PLAIN, 14));
+        checkInButton.setEnabled(false);
+        checkInButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        checkInButton.setBackground(new Color(0, 180, 0));
+        checkInButton.setForeground(Color.WHITE);
+        checkInButton.setOpaque(true);
+        checkInButton.setBorderPainted(false);
+        checkInButton.setFocusPainted(false);
+        // Set disabled colors explicitly
+        checkInButton.setUI(new javax.swing.plaf.basic.BasicButtonUI() {
+            @Override
+            public void update(Graphics g, JComponent c) {
+                JButton btn = (JButton) c;
+                if (btn.isEnabled()) {
+                    btn.setBackground(new Color(0, 180, 0));
+                    btn.setForeground(Color.WHITE);
+                } else {
+                    btn.setBackground(new Color(200, 200, 200));
+                    btn.setForeground(new Color(140, 140, 140));
+                }
+                super.update(g, c);
+            }
+        });
+        checkInButton.addActionListener(e -> {
+            if (controller != null) {
+                String landmarkName = controller.checkInAtLandmark();
+                if (landmarkName != null) {
+                    // TODO: Trigger actual check-in via SelectedPlaceController
+                    System.out.println("Checked in at: " + landmarkName);
+                    JOptionPane.showMessageDialog(this,
+                            "Checked in at " + landmarkName + "!",
+                            "Check-In Success",
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
+        });
+
+        actionButtonsPanel.add(completeStepButton);
+        actionButtonsPanel.add(checkInButton);
 
         rightPanel.add(routeLabel);
         rightPanel.add(Box.createVerticalStrut(15));
@@ -209,7 +285,7 @@ public class PlanRouteView extends JPanel implements PropertyChangeListener {
         rightPanel.add(Box.createVerticalStrut(10));
         rightPanel.add(stepsScroll);
         rightPanel.add(Box.createVerticalStrut(20));
-        rightPanel.add(startRouteButton);
+        rightPanel.add(actionButtonsPanel);
 
         centerPanel.add(leftPanel);
         centerPanel.add(rightPanel);
@@ -246,16 +322,49 @@ public class PlanRouteView extends JPanel implements PropertyChangeListener {
         // Update steps list
         stepsListModel.clear();
         for (PlanRouteState.StepVM step : state.getSteps()) {
-            String line = "• " + step.instruction +
-                    " (" + step.distance + ", " + step.duration + ")";
-            if (step.landmarkNearby != null && !step.landmarkNearby.isEmpty()) {
-                line += " [" + step.landmarkNearby + " nearby]";
+            String line = step.instruction;
+            if (!step.isLandmark && step.distance != null && !step.distance.isEmpty()) {
+                line += " (" + step.distance;
+                if (step.duration != null && !step.duration.isEmpty()) {
+                    line += ", " + step.duration;
+                }
+                line += ")";
             }
             stepsListModel.addElement(line);
         }
 
-        // Enable start button if we have steps
-        startRouteButton.setEnabled(!state.getSteps().isEmpty());
+        // Update button states based on current step
+        PlanRouteState.StepVM currentStep = state.getCurrentStep();
+
+        if (state.isRouteCompleted()) {
+            // All steps done
+            completeStepButton.setEnabled(false);
+            checkInButton.setEnabled(false);
+        } else if (currentStep != null) {
+            if (currentStep.isLandmark) {
+                // Current step is a landmark - show check-in button
+                completeStepButton.setEnabled(false);
+                checkInButton.setEnabled(true);
+                checkInButton.setBackground(new Color(0, 180, 0));
+                checkInButton.setForeground(Color.WHITE);
+            } else {
+                // Current step is navigation - show complete step button
+                completeStepButton.setEnabled(true);
+                checkInButton.setEnabled(false);
+                checkInButton.setBackground(new Color(200, 200, 200));
+                checkInButton.setForeground(new Color(140, 140, 140));
+            }
+        } else {
+            completeStepButton.setEnabled(false);
+            checkInButton.setEnabled(false);
+            checkInButton.setBackground(new Color(200, 200, 200));
+            checkInButton.setForeground(new Color(140, 140, 140));
+        }
+
+        // Scroll to current step
+        if (!state.isRouteCompleted()) {
+            stepsList.ensureIndexIsVisible(state.getCurrentStepIndex());
+        }
 
         // Show errors
         if (state.getErrorMessage() != null && !state.getErrorMessage().isEmpty()) {
@@ -263,5 +372,8 @@ public class PlanRouteView extends JPanel implements PropertyChangeListener {
         } else {
             errorLabel.setText("");
         }
+
+        // Force list repaint to update colors
+        stepsList.repaint();
     }
 }

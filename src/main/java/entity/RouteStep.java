@@ -17,4 +17,23 @@ public class RouteStep {
     public String getInstruction() { return instruction; }
     public int getDistance() { return distance; }
     public int getDuration() { return duration; }
+
+    /**
+     * Check if this step is a landmark check-in point.
+     * Landmark steps are identified by the 📍 emoji prefix.
+     */
+    public boolean isLandmark() {
+        return instruction != null && instruction.startsWith("📍 ");
+    }
+
+    /**
+     * Get the landmark name (without the emoji prefix).
+     * Returns null if this is not a landmark step.
+     */
+    public String getLandmarkName() {
+        if (isLandmark()) {
+            return instruction.substring(2).trim(); // Skip "📍 "
+        }
+        return null;
+    }
 }

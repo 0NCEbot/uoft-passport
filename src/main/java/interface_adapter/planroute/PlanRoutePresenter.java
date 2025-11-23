@@ -31,7 +31,8 @@ public class PlanRoutePresenter implements PlanRouteOutputBoundary {
             vm.instruction = dto.instruction;
             vm.distance = formatDistance(dto.distanceMeters);
             vm.duration = formatDuration(dto.durationSeconds);
-            vm.landmarkNearby = dto.landmarkNearby;
+            vm.landmarkName = dto.landmarkName;
+            vm.isLandmark = dto.isLandmark;
             vm.completed = false;
             stepVMs.add(vm);
         }
@@ -39,6 +40,9 @@ public class PlanRoutePresenter implements PlanRouteOutputBoundary {
 
         state.setTotalDistance(formatDistance(outputData.getTotalDistanceMeters()));
         state.setTotalDuration(formatDuration(outputData.getTotalDurationSeconds()));
+
+        // Set current step to 0 (first step)
+        state.setCurrentStepIndex(0);
 
         viewModel.setState(state);
         viewModel.firePropertyChange();

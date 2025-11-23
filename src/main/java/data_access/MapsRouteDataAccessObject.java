@@ -39,17 +39,39 @@ public class MapsRouteDataAccessObject implements RouteDataAccessInterface {
                 return null;
             }
 
-            // Step 2: Build request body
-            String requestBody = buildRouteRequest(startLocation, destinationLocation, intermediateStopNames);
+            // Step 2: Build a list to track all waypoints with names
+            List<String> waypointNames = new ArrayList<>();
+            List<Location> waypointLocations = new ArrayList<>();
 
-            // Step 3: Call Google Routes API
+            // Add intermediates
+            if (intermediateStopNames != null) {
+                for (String intermediateName : intermediateStopNames) {
+                    Location loc = resolveLandmarkToLocation(intermediateName);
+                    if (loc != null) {
+                        waypointNames.add(intermediateName);
+                        waypointLocations.add(loc);
+                    }
+                }
+            }
+
+            // Step 3: Build request body
+            String requestBody = buildRouteRequest(startLocation, destinationLocation,
+                    waypointLocations.toArray(new Location[0]));
+
+            // Step 4: Call Google Routes API
             JSONObject responseJson = callRoutesAPI(requestBody);
             if (responseJson == null) {
                 return null;
             }
 
-            // Step 4: Parse response
-            List<RouteStep> steps = extractSteps(responseJson);
+            // Step 5: Parse response with landmark information
+            List<RouteStep> steps = extractStepsWithLandmarks(
+                    responseJson,
+                    startLocationName,
+                    destinationName,
+                    waypointNames
+            );
+
             int totalDistance = responseJson
                     .getJSONArray("routes")
                     .getJSONObject(0)
@@ -100,7 +122,7 @@ public class MapsRouteDataAccessObject implements RouteDataAccessInterface {
     /**
      * Build the JSON request body for Google Routes API.
      */
-    private String buildRouteRequest(Location start, Location destination, String[] intermediates) {
+    private String buildRouteRequest(Location start, Location destination, Location[] intermediates) {
         JSONObject request = new JSONObject();
 
         // Origin - FIXED: wrap in "location" object with "latLng"
@@ -120,8 +142,7 @@ public class MapsRouteDataAccessObject implements RouteDataAccessInterface {
         // Intermediate waypoints (if any)
         if (intermediates != null && intermediates.length > 0) {
             JSONArray waypoints = new JSONArray();
-            for (String intermediateName : intermediates) {
-                Location intermediateLoc = resolveLandmarkToLocation(intermediateName);
+            for (Location intermediateLoc : intermediates) {
                 if (intermediateLoc != null) {
                     JSONObject waypoint = new JSONObject();
                     JSONObject waypointLocation = new JSONObject();
@@ -178,6 +199,66 @@ public class MapsRouteDataAccessObject implements RouteDataAccessInterface {
             System.out.println("[ROUTE DAO] API Response received");
             return new JSONObject(responseData);
         }
+    }
+
+    /**
+     * Extract individual route steps from the API response WITH landmark markers.
+     * Inserts landmark steps at the start, between legs, and at the end.
+     */
+    private List<RouteStep> extractStepsWithLandmarks(JSONObject responseJson,
+                                                      String startName,
+                                                      String destName,
+                                                      List<String> intermediateNames) {
+        List<RouteStep> steps = new ArrayList<>();
+
+        try {
+            JSONArray routes = responseJson.optJSONArray("routes");
+            if (routes == null || routes.length() == 0) {
+                return steps;
+            }
+
+            JSONObject route = routes.getJSONObject(0);
+            JSONArray legs = route.optJSONArray("legs");
+            if (legs == null) {
+                return steps;
+            }
+
+            int stepIndex = 0;
+
+            // Add START landmark step
+            steps.add(new RouteStep(stepIndex++, "📍 " + startName, 0, 0));
+
+            // Process each leg (there will be N+1 legs for N intermediates)
+            for (int legIdx = 0; legIdx < legs.length(); legIdx++) {
+                JSONObject leg = legs.getJSONObject(legIdx);
+                JSONArray stepsArray = leg.optJSONArray("steps");
+
+                if (stepsArray != null) {
+                    // Add navigation steps for this leg
+                    for (int i = 0; i < stepsArray.length(); i++) {
+                        JSONObject stepJson = stepsArray.getJSONObject(i);
+                        String instruction = extractInstruction(stepJson);
+                        int distanceMeters = stepJson.optInt("distanceMeters", 0);
+                        int durationSeconds = extractDurationSeconds(stepJson);
+
+                        steps.add(new RouteStep(stepIndex++, instruction, distanceMeters, durationSeconds));
+                    }
+                }
+
+                // After each leg (except the last), add intermediate landmark
+                if (legIdx < intermediateNames.size()) {
+                    steps.add(new RouteStep(stepIndex++, "📍 " + intermediateNames.get(legIdx), 0, 0));
+                }
+            }
+
+            // Add END landmark step
+            steps.add(new RouteStep(stepIndex++, "📍 " + destName, 0, 0));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return steps;
     }
 
     /**

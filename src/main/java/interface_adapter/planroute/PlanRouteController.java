@@ -30,14 +30,54 @@ public class PlanRouteController {
     }
 
     /**
-     * Mark a step as completed when user checks it off.
+     * Complete the current step (for navigation steps).
      */
-    public void completeStep(int stepIndex) {
+    public void completeStep() {
         PlanRouteState state = viewModel.getState();
-        if (stepIndex < state.getSteps().size()) {
-            state.getSteps().get(stepIndex).completed = true;
+
+        if (state.isRouteCompleted()) {
+            return; // Already done
+        }
+
+        PlanRouteState.StepVM currentStep = state.getCurrentStep();
+        if (currentStep != null && !currentStep.isLandmark) {
+            // Mark current step as completed
+            currentStep.completed = true;
+
+            // Move to next step
+            state.setCurrentStepIndex(state.getCurrentStepIndex() + 1);
+
             viewModel.setState(state);
             viewModel.firePropertyChange();
         }
+    }
+
+    /**
+     * Check in at a landmark (for landmark steps).
+     * Returns the landmark name for the calling code to handle the check-in.
+     */
+    public String checkInAtLandmark() {
+        PlanRouteState state = viewModel.getState();
+
+        if (state.isRouteCompleted()) {
+            return null;
+        }
+
+        PlanRouteState.StepVM currentStep = state.getCurrentStep();
+        if (currentStep != null && currentStep.isLandmark) {
+            // Mark current landmark as completed
+            currentStep.completed = true;
+
+            // Move to next step
+            state.setCurrentStepIndex(state.getCurrentStepIndex() + 1);
+
+            viewModel.setState(state);
+            viewModel.firePropertyChange();
+
+            // Return landmark name for check-in
+            return currentStep.landmarkName;
+        }
+
+        return null;
     }
 }
