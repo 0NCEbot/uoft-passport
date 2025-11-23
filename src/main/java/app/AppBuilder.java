@@ -328,18 +328,26 @@ public class AppBuilder {
 
         selectedPlaceController = new SelectedPlaceController(spInteractor);
         selectedPlaceView.setSelectedPlaceController(selectedPlaceController);
+
+        return this;
+
+    }
     public AppBuilder addPlanRouteUseCase() {
         RouteDataAccessInterface routeDAO =
-                new MapsRouteDataAccessObject(landmarkDAO);
+                new MapsRouteDataAccessObject(landmarkDataAccessObject);
 
         PlanRouteOutputBoundary presenter =
                 new PlanRoutePresenter(planRouteViewModel, viewManagerModel);
 
         PlanRouteInputBoundary interactor =
-                new PlanRouteInteractor(routeDAO, landmarkDAO, presenter);
+                new PlanRouteInteractor(routeDAO, landmarkDataAccessObject, presenter);
 
         planRouteController = new PlanRouteController(interactor, planRouteViewModel);
         planRouteView.setPlanRouteController(planRouteController);
+
+        return this;
+
+    }
     /**
      * Adds the View History view and wires the use cases.
      * This method creates and configures the view history screen with both
@@ -386,11 +394,13 @@ public class AppBuilder {
 
         MyProgressController controller = new MyProgressController(interactor);
         myProgressView.setMyProgressController(controller);
-    /**
-     * Adds the View Progress view and wires the use case.
-     * This method creates and configures the progress summary screen
-     * that displays user's exploration statistics.
-     */
+        return this;
+    }
+        /**
+         * Adds the View Progress view and wires the use case.
+         * This method creates and configures the progress summary screen
+         * that displays user's exploration statistics.
+         */
     public AppBuilder addViewProgressView() {
         viewProgressViewModel = new ViewProgressViewModel();
         viewProgressView = new ViewProgressView(viewProgressViewModel, viewManagerModel);
@@ -405,7 +415,7 @@ public class AppBuilder {
         ViewProgressInputBoundary viewProgressInteractor =
                 new ViewProgressInteractor(
                         userDataAccessObject,
-                        landmarkDAO,
+                        landmarkDataAccessObject,
                         presenter
                 );
 
