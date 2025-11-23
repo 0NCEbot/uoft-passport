@@ -7,7 +7,7 @@ import entity.LandmarkInfo;
 import entity.Note;
 import entity.User;
 import entity.Visit;
-import interface_adapter.ViewModel;
+import interface_adapter.EventBus;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -76,7 +76,7 @@ public class SelectedPlaceInteractor implements SelectedPlaceInputBoundary {
         userDAO.save(user);
 
         // Publish global event for other views to react
-        ViewModel.publish("visitRecorded", username);
+        EventBus.publish("visitModified", username);
 
         LandmarkInfo info = landmark.getLandmarkInfo();
         SelectedPlaceOutputData output = new SelectedPlaceOutputData(

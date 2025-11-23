@@ -1,6 +1,5 @@
 package app;
 
-import data_access.*;
 import entity.UserFactory;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.browselandmarks.*;
@@ -46,10 +45,6 @@ import interface_adapter.planroute.PlanRouteViewModel;
 import interface_adapter.viewhistory.ViewHistoryController;
 import interface_adapter.viewhistory.ViewHistoryPresenter;
 import interface_adapter.viewhistory.ViewHistoryViewModel;
-// NEW imports for View Progress
-import interface_adapter.viewprogress.ViewProgressController;
-import interface_adapter.viewprogress.ViewProgressPresenter;
-import interface_adapter.viewprogress.ViewProgressViewModel;
 
 import use_case.browselandmarks.BrowseLandmarksInputBoundary;
 import use_case.browselandmarks.BrowseLandmarksInteractor;
@@ -84,19 +79,9 @@ import use_case.viewhistory.ViewHistoryOutputBoundary;
 import use_case.undovisit.UndoVisitInputBoundary;
 import use_case.undovisit.UndoVisitInteractor;
 import use_case.undovisit.UndoVisitOutputBoundary;
-// NEW imports for View Progress use case
-import use_case.viewprogress.ViewProgressInputBoundary;
-import use_case.viewprogress.ViewProgressInteractor;
-import use_case.viewprogress.ViewProgressOutputBoundary;
 
 import view.*;
 // NEW Notes view
-import view.AddNotesView;
-import view.PlanRouteView;
-// NEW View History view
-import view.ViewHistoryView;
-// NEW View Progress view
-import view.ViewProgressView;
 
 import javax.swing.*;
 import java.awt.*;
@@ -146,10 +131,6 @@ public class AppBuilder {
     private ViewHistoryViewModel viewHistoryViewModel;
     private ViewHistoryView viewHistoryView;
 
-    // NEW: view progress VM + view
-    private ViewProgressViewModel viewProgressViewModel;
-    private ViewProgressView viewProgressView;
-
     // ---- use case controllers ----
     private SelectedPlaceController selectedPlaceController;
     private BrowseLandmarksController browseLandmarksController;
@@ -157,8 +138,6 @@ public class AppBuilder {
     private AddNotesController notesController;
     // NEW: view history controller
     private ViewHistoryController viewHistoryController;
-    // NEW: view progress controller
-    private ViewProgressController viewProgressController;
 
     private PlanRouteViewModel planRouteViewModel;
     private PlanRouteView planRouteView;
@@ -262,16 +241,6 @@ public class AppBuilder {
                         browseLandmarksViewModel);
         HomescreenPresenter presenter =
                 new HomescreenPresenter(homescreenViewModel, viewManagerModel, browseLandmarksViewModel);
-
-        // Set view history controller if available for navigation
-        if (viewHistoryController != null) {
-            presenter.setViewHistoryController(viewHistoryController);
-        }
-
-        // Set view progress controller if available for navigation
-        if (viewProgressController != null) {
-            presenter.setViewProgressController(viewProgressController);
-        }
 
         HomescreenInputBoundary interactor =
                 new HomescreenInteractor(presenter);
@@ -394,43 +363,6 @@ public class AppBuilder {
 
         MyProgressController controller = new MyProgressController(interactor);
         myProgressView.setMyProgressController(controller);
-        return this;
-    }
-        /**
-         * Adds the View Progress view and wires the use case.
-         * This method creates and configures the progress summary screen
-         * that displays user's exploration statistics.
-         */
-    public AppBuilder addViewProgressView() {
-        viewProgressViewModel = new ViewProgressViewModel();
-        viewProgressView = new ViewProgressView(viewProgressViewModel, viewManagerModel);
-
-        // Create presenter
-        ViewProgressPresenter presenter = new ViewProgressPresenter(
-                viewProgressViewModel,
-                viewManagerModel
-        );
-
-        // Wire View Progress use case
-        ViewProgressInputBoundary viewProgressInteractor =
-                new ViewProgressInteractor(
-                        userDataAccessObject,
-                        landmarkDataAccessObject,
-                        presenter
-                );
-
-        // Create controller
-        viewProgressController = new ViewProgressController(viewProgressInteractor);
-
-        viewProgressView.setController(viewProgressController);
-
-        // Wire navigation to View History
-        if (viewHistoryController != null) {
-            viewProgressView.setViewHistoryController(viewHistoryController);
-        }
-
-        cardPanel.add(viewProgressView, viewProgressView.getViewName());
-
         return this;
     }
 
