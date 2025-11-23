@@ -9,7 +9,7 @@ public class PlanRouteState {
         public String instruction;
         public String distance;
         public String duration;
-        public String landmarkName;  // Non-null if this is a landmark
+        public String landmarkName;
         public boolean isLandmark;
         public boolean completed;
     }
@@ -21,7 +21,8 @@ public class PlanRouteState {
     private String totalDuration = "";
     private boolean manualMode = false;
     private String errorMessage = null;
-    private int currentStepIndex = 0;  // Track which step we're on
+    private int currentStepIndex = 0;
+    private byte[] mapImageBytes = null;  // NEW
 
     public PlanRouteState() {}
 
@@ -34,6 +35,7 @@ public class PlanRouteState {
         this.manualMode = copy.manualMode;
         this.errorMessage = copy.errorMessage;
         this.currentStepIndex = copy.currentStepIndex;
+        this.mapImageBytes = copy.mapImageBytes;
     }
 
     public String getStartLocation() { return startLocation; }
@@ -60,9 +62,9 @@ public class PlanRouteState {
     public int getCurrentStepIndex() { return currentStepIndex; }
     public void setCurrentStepIndex(int i) { this.currentStepIndex = i; }
 
-    /**
-     * Get the current active step (not completed yet).
-     */
+    public byte[] getMapImageBytes() { return mapImageBytes; }  // NEW
+    public void setMapImageBytes(byte[] bytes) { this.mapImageBytes = bytes; }  // NEW
+
     public StepVM getCurrentStep() {
         if (currentStepIndex >= 0 && currentStepIndex < steps.size()) {
             return steps.get(currentStepIndex);
@@ -70,9 +72,6 @@ public class PlanRouteState {
         return null;
     }
 
-    /**
-     * Check if all steps are completed.
-     */
     public boolean isRouteCompleted() {
         return currentStepIndex >= steps.size();
     }

@@ -40,9 +40,10 @@ public class PlanRoutePresenter implements PlanRouteOutputBoundary {
 
         state.setTotalDistance(formatDistance(outputData.getTotalDistanceMeters()));
         state.setTotalDuration(formatDuration(outputData.getTotalDurationSeconds()));
-
-        // Set current step to 0 (first step)
         state.setCurrentStepIndex(0);
+
+        // Set map image bytes
+        state.setMapImageBytes(outputData.getMapImageBytes());
 
         viewModel.setState(state);
         viewModel.firePropertyChange();
@@ -59,23 +60,14 @@ public class PlanRoutePresenter implements PlanRouteOutputBoundary {
     }
 
     private String formatDistance(int meters) {
-        if (meters < 1000) {
-            return meters + " m";
-        }
-        double km = meters / 1000.0;
-        return String.format("%.2f km", km);
+        if (meters < 1000) return meters + " m";
+        return String.format("%.2f km", meters / 1000.0);
     }
 
     private String formatDuration(int seconds) {
-        if (seconds < 60) {
-            return seconds + " sec";
-        }
+        if (seconds < 60) return seconds + " sec";
         int minutes = seconds / 60;
-        if (minutes < 60) {
-            return minutes + " min";
-        }
-        int hours = minutes / 60;
-        int mins = minutes % 60;
-        return hours + "h " + mins + "m";
+        if (minutes < 60) return minutes + " min";
+        return (minutes / 60) + "h " + (minutes % 60) + "m";
     }
 }

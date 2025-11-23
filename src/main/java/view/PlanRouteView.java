@@ -17,12 +17,10 @@ public class PlanRouteView extends JPanel implements PropertyChangeListener {
     private final ViewManagerModel viewManagerModel;
     private PlanRouteController controller;
 
-    // Input fields
     private JTextField startLocationField;
     private JTextField destinationField;
     private JTextField intermediateStopsField;
 
-    // Display components
     private JLabel usernameLabel;
     private JLabel totalDistanceLabel;
     private JLabel totalDurationLabel;
@@ -30,17 +28,15 @@ public class PlanRouteView extends JPanel implements PropertyChangeListener {
     private JList<String> stepsList;
     private DefaultListModel<String> stepsListModel;
     private JLabel manualModeIndicator;
+    private JLabel mapImageLabel;  // NEW
 
-    // Buttons
     private JButton planButton;
     private JButton completeStepButton;
     private JButton checkInButton;
 
-    public PlanRouteView(PlanRouteViewModel viewModel,
-                         ViewManagerModel viewManagerModel) {
+    public PlanRouteView(PlanRouteViewModel viewModel, ViewManagerModel viewManagerModel) {
         this.viewModel = viewModel;
         this.viewManagerModel = viewManagerModel;
-
         this.viewModel.addPropertyChangeListener(this);
 
         setLayout(new BorderLayout());
@@ -57,7 +53,6 @@ public class PlanRouteView extends JPanel implements PropertyChangeListener {
         usernameLabel.setFont(new Font("Arial", Font.PLAIN, 16));
         usernameLabel.setForeground(new Color(0, 102, 204));
         userPanel.add(usernameLabel);
-
         topBar.add(userPanel, BorderLayout.WEST);
 
         // === BACK BUTTON ===
@@ -85,13 +80,12 @@ public class PlanRouteView extends JPanel implements PropertyChangeListener {
         JPanel leftPanel = new JPanel();
         leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
         leftPanel.setBackground(Color.WHITE);
-        leftPanel.setBorder(BorderFactory.createEmptyBorder(40, 40, 40, 20));
+        leftPanel.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 20));
 
         JLabel titleLabel = new JLabel("Plan Your Route");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 32));
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 28));
         titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Start location
         JLabel startLabel = new JLabel("Start Location:");
         startLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         startLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -99,7 +93,6 @@ public class PlanRouteView extends JPanel implements PropertyChangeListener {
         startLocationField.setMaximumSize(new Dimension(300, 30));
         startLocationField.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Destination
         JLabel destLabel = new JLabel("Destination:");
         destLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         destLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -107,7 +100,6 @@ public class PlanRouteView extends JPanel implements PropertyChangeListener {
         destinationField.setMaximumSize(new Dimension(300, 30));
         destinationField.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Intermediate stops
         JLabel intermediateLabel = new JLabel("Intermediate Stops (comma-separated, optional):");
         intermediateLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         intermediateLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -115,13 +107,11 @@ public class PlanRouteView extends JPanel implements PropertyChangeListener {
         intermediateStopsField.setMaximumSize(new Dimension(300, 30));
         intermediateStopsField.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Error label
         errorLabel = new JLabel("");
         errorLabel.setForeground(Color.RED);
         errorLabel.setFont(new Font("Arial", Font.PLAIN, 12));
         errorLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Plan button
         planButton = new JButton("Plan Route");
         planButton.setFont(new Font("Arial", Font.PLAIN, 16));
         planButton.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -132,24 +122,22 @@ public class PlanRouteView extends JPanel implements PropertyChangeListener {
                 String start = startLocationField.getText().trim();
                 String dest = destinationField.getText().trim();
                 String intermediate = intermediateStopsField.getText().trim();
-                String[] stops = intermediate.isEmpty() ? new String[0]
-                        : intermediate.split(",\\s*");
-
+                String[] stops = intermediate.isEmpty() ? new String[0] : intermediate.split(",\\s*");
                 controller.planRoute(start, dest, stops);
             }
         });
 
         leftPanel.add(titleLabel);
-        leftPanel.add(Box.createVerticalStrut(30));
+        leftPanel.add(Box.createVerticalStrut(20));
         leftPanel.add(startLabel);
         leftPanel.add(startLocationField);
-        leftPanel.add(Box.createVerticalStrut(15));
+        leftPanel.add(Box.createVerticalStrut(10));
         leftPanel.add(destLabel);
         leftPanel.add(destinationField);
-        leftPanel.add(Box.createVerticalStrut(15));
+        leftPanel.add(Box.createVerticalStrut(10));
         leftPanel.add(intermediateLabel);
         leftPanel.add(intermediateStopsField);
-        leftPanel.add(Box.createVerticalStrut(20));
+        leftPanel.add(Box.createVerticalStrut(15));
         leftPanel.add(errorLabel);
         leftPanel.add(Box.createVerticalStrut(10));
         leftPanel.add(planButton);
@@ -158,27 +146,31 @@ public class PlanRouteView extends JPanel implements PropertyChangeListener {
         JPanel rightPanel = new JPanel();
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
         rightPanel.setBackground(Color.WHITE);
-        rightPanel.setBorder(BorderFactory.createEmptyBorder(40, 20, 40, 40));
+        rightPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 40));
 
         JLabel routeLabel = new JLabel("Route Details");
-        routeLabel.setFont(new Font("Arial", Font.BOLD, 28));
+        routeLabel.setFont(new Font("Arial", Font.BOLD, 24));
         routeLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Summary
         manualModeIndicator = new JLabel("");
-        manualModeIndicator.setForeground(new Color(255, 140, 0)); // orange
+        manualModeIndicator.setForeground(new Color(255, 140, 0));
         manualModeIndicator.setFont(new Font("Arial", Font.BOLD, 12));
         manualModeIndicator.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         totalDistanceLabel = new JLabel("Total Distance: —");
-        totalDistanceLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        totalDistanceLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         totalDistanceLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         totalDurationLabel = new JLabel("Total Duration: —");
-        totalDurationLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        totalDurationLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         totalDurationLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Steps list with custom renderer
+        // Map image label
+        mapImageLabel = new JLabel();
+        mapImageLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        mapImageLabel.setPreferredSize(new Dimension(400, 350));
+        mapImageLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+
         JLabel stepsLabel = new JLabel("Steps:");
         stepsLabel.setFont(new Font("Arial", Font.BOLD, 14));
         stepsLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -186,17 +178,14 @@ public class PlanRouteView extends JPanel implements PropertyChangeListener {
         stepsListModel = new DefaultListModel<>();
         stepsList = new JList<>(stepsListModel);
         stepsList.setFont(new Font("Arial", Font.PLAIN, 12));
-        stepsList.setVisibleRowCount(8);
+        stepsList.setVisibleRowCount(6);
 
-        // Custom cell renderer for greyed-out completed steps
         stepsList.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value,
                                                           int index, boolean isSelected, boolean cellHasFocus) {
                 JLabel label = (JLabel) super.getListCellRendererComponent(
                         list, value, index, isSelected, cellHasFocus);
-
-                // Check if this step is completed
                 PlanRouteState state = viewModel.getState();
                 if (state != null && index < state.getSteps().size()) {
                     PlanRouteState.StepVM step = state.getSteps().get(index);
@@ -204,21 +193,18 @@ public class PlanRouteView extends JPanel implements PropertyChangeListener {
                         label.setForeground(Color.GRAY);
                         label.setFont(label.getFont().deriveFont(Font.ITALIC));
                     } else if (index == state.getCurrentStepIndex()) {
-                        // Highlight current step
                         label.setForeground(new Color(0, 102, 204));
                         label.setFont(label.getFont().deriveFont(Font.BOLD));
                     }
                 }
-
                 return label;
             }
         });
 
         JScrollPane stepsScroll = new JScrollPane(stepsList);
         stepsScroll.setAlignmentX(Component.LEFT_ALIGNMENT);
-        stepsScroll.setPreferredSize(new Dimension(150, 50));
+        stepsScroll.setPreferredSize(new Dimension(250, 200));
 
-        // Action buttons panel
         JPanel actionButtonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         actionButtonsPanel.setOpaque(false);
         actionButtonsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -227,11 +213,7 @@ public class PlanRouteView extends JPanel implements PropertyChangeListener {
         completeStepButton.setFont(new Font("Arial", Font.PLAIN, 14));
         completeStepButton.setEnabled(false);
         completeStepButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        completeStepButton.addActionListener(e -> {
-            if (controller != null) {
-                controller.completeStep();
-            }
-        });
+        completeStepButton.addActionListener(e -> { if (controller != null) controller.completeStep(); });
 
         checkInButton = new JButton("Check In");
         checkInButton.setFont(new Font("Arial", Font.PLAIN, 14));
@@ -241,32 +223,12 @@ public class PlanRouteView extends JPanel implements PropertyChangeListener {
         checkInButton.setForeground(Color.WHITE);
         checkInButton.setOpaque(true);
         checkInButton.setBorderPainted(false);
-        checkInButton.setFocusPainted(false);
-        // Set disabled colors explicitly
-        checkInButton.setUI(new javax.swing.plaf.basic.BasicButtonUI() {
-            @Override
-            public void update(Graphics g, JComponent c) {
-                JButton btn = (JButton) c;
-                if (btn.isEnabled()) {
-                    btn.setBackground(new Color(0, 180, 0));
-                    btn.setForeground(Color.WHITE);
-                } else {
-                    btn.setBackground(new Color(200, 200, 200));
-                    btn.setForeground(new Color(140, 140, 140));
-                }
-                super.update(g, c);
-            }
-        });
         checkInButton.addActionListener(e -> {
             if (controller != null) {
                 String landmarkName = controller.checkInAtLandmark();
                 if (landmarkName != null) {
-                    // TODO: Trigger actual check-in via SelectedPlaceController
-                    System.out.println("Checked in at: " + landmarkName);
-                    JOptionPane.showMessageDialog(this,
-                            "Checked in at " + landmarkName + "!",
-                            "Check-In Success",
-                            JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Checked in at " + landmarkName + "!",
+                            "Check-In Success", JOptionPane.INFORMATION_MESSAGE);
                 }
             }
         });
@@ -275,17 +237,18 @@ public class PlanRouteView extends JPanel implements PropertyChangeListener {
         actionButtonsPanel.add(checkInButton);
 
         rightPanel.add(routeLabel);
-        rightPanel.add(Box.createVerticalStrut(15));
-        rightPanel.add(manualModeIndicator);
         rightPanel.add(Box.createVerticalStrut(10));
+        rightPanel.add(manualModeIndicator);
         rightPanel.add(totalDistanceLabel);
         rightPanel.add(totalDurationLabel);
-        rightPanel.add(Box.createVerticalStrut(20));
-        rightPanel.add(stepsLabel);
         rightPanel.add(Box.createVerticalStrut(10));
-        rightPanel.add(stepsScroll);
-        rightPanel.add(Box.createVerticalStrut(20));
-        rightPanel.add(actionButtonsPanel);
+        rightPanel.add(mapImageLabel);  // Add map
+        leftPanel.add(Box.createVerticalStrut(10));
+        leftPanel.add(stepsLabel);
+        leftPanel.add(Box.createVerticalStrut(5));
+        leftPanel.add(stepsScroll);
+        leftPanel.add(Box.createVerticalStrut(10));
+        leftPanel.add(actionButtonsPanel);
 
         centerPanel.add(leftPanel);
         centerPanel.add(rightPanel);
@@ -299,9 +262,7 @@ public class PlanRouteView extends JPanel implements PropertyChangeListener {
         this.controller = controller;
     }
 
-    public String getViewName() {
-        return viewName;
-    }
+    public String getViewName() { return viewName; }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
@@ -309,71 +270,47 @@ public class PlanRouteView extends JPanel implements PropertyChangeListener {
 
         PlanRouteState state = (PlanRouteState) evt.getNewValue();
 
-        // Update display
         totalDistanceLabel.setText("Total Distance: " + state.getTotalDistance());
         totalDurationLabel.setText("Total Duration: " + state.getTotalDuration());
 
-        if (state.isManualMode()) {
-            manualModeIndicator.setText("⚠ Self-guided mode (API unavailable)");
+        manualModeIndicator.setText(state.isManualMode() ? "⚠ Self-guided mode (API unavailable)" : "");
+
+        // Update map image
+        byte[] mapBytes = state.getMapImageBytes();
+        if (mapBytes != null && mapBytes.length > 0) {
+            ImageIcon mapIcon = new ImageIcon(mapBytes);
+            mapImageLabel.setIcon(mapIcon);
+            mapImageLabel.setText("");
         } else {
-            manualModeIndicator.setText("");
+            mapImageLabel.setIcon(null);
+            mapImageLabel.setText("Map unavailable");
         }
 
-        // Update steps list
         stepsListModel.clear();
         for (PlanRouteState.StepVM step : state.getSteps()) {
             String line = step.instruction;
             if (!step.isLandmark && step.distance != null && !step.distance.isEmpty()) {
                 line += " (" + step.distance;
-                if (step.duration != null && !step.duration.isEmpty()) {
-                    line += ", " + step.duration;
-                }
+                if (step.duration != null && !step.duration.isEmpty()) line += ", " + step.duration;
                 line += ")";
             }
             stepsListModel.addElement(line);
         }
 
-        // Update button states based on current step
         PlanRouteState.StepVM currentStep = state.getCurrentStep();
-
         if (state.isRouteCompleted()) {
-            // All steps done
             completeStepButton.setEnabled(false);
             checkInButton.setEnabled(false);
         } else if (currentStep != null) {
-            if (currentStep.isLandmark) {
-                // Current step is a landmark - show check-in button
-                completeStepButton.setEnabled(false);
-                checkInButton.setEnabled(true);
-                checkInButton.setBackground(new Color(0, 180, 0));
-                checkInButton.setForeground(Color.WHITE);
-            } else {
-                // Current step is navigation - show complete step button
-                completeStepButton.setEnabled(true);
-                checkInButton.setEnabled(false);
-                checkInButton.setBackground(new Color(200, 200, 200));
-                checkInButton.setForeground(new Color(140, 140, 140));
-            }
-        } else {
-            completeStepButton.setEnabled(false);
-            checkInButton.setEnabled(false);
-            checkInButton.setBackground(new Color(200, 200, 200));
-            checkInButton.setForeground(new Color(140, 140, 140));
+            completeStepButton.setEnabled(!currentStep.isLandmark);
+            checkInButton.setEnabled(currentStep.isLandmark);
+            checkInButton.setBackground(currentStep.isLandmark ? new Color(0, 180, 0) : new Color(200, 200, 200));
+            checkInButton.setForeground(currentStep.isLandmark ? Color.WHITE : new Color(140, 140, 140));
         }
 
-        // Scroll to current step
-        if (!state.isRouteCompleted()) {
-            stepsList.ensureIndexIsVisible(state.getCurrentStepIndex());
-        }
+        if (!state.isRouteCompleted()) stepsList.ensureIndexIsVisible(state.getCurrentStepIndex());
 
-        // Show errors
-        if (state.getErrorMessage() != null && !state.getErrorMessage().isEmpty()) {
-            errorLabel.setText(state.getErrorMessage());
-        } else {
-            errorLabel.setText("");
-        }
-
-        // Force list repaint to update colors
+        errorLabel.setText(state.getErrorMessage() != null ? state.getErrorMessage() : "");
         stepsList.repaint();
     }
 }

@@ -27,7 +27,6 @@ public class PlanRouteInteractor implements PlanRouteInputBoundary {
         String destination = inputData.getDestination();
         String[] intermediates = inputData.getIntermediateStops();
 
-        // VALIDATION: Check inputs
         if (start == null || start.isBlank()) {
             presenter.presentError("Start location cannot be empty.");
             return;
@@ -37,7 +36,6 @@ public class PlanRouteInteractor implements PlanRouteInputBoundary {
             return;
         }
 
-        // CALL DAO: Try to fetch route from Google Maps
         try {
             RouteDataAccessInterface.RouteResponse response = routeDAO.getRoute(start, destination, intermediates);
 
@@ -46,19 +44,21 @@ public class PlanRouteInteractor implements PlanRouteInputBoundary {
                 return;
             }
 
-            // Check if the request was successful
             if (!response.isSuccessful()) {
-                // DAO already validated landmarks and provided a user-friendly error message
                 String errorMsg = response.getErrorMessage();
-                if (errorMsg != null && !errorMsg.isEmpty()) {
-                    presenter.presentError(errorMsg);
-                } else {
-                    presenter.presentError("Failed to plan route. Please try again.");
-                }
+                presenter.presentError(errorMsg != null && !errorMsg.isEmpty()
+                        ? errorMsg : "Failed to plan route. Please try again.");
                 return;
             }
 
-            // SUCCESS: Convert DAO response to output data
+            // Fetch static map image
+            byte[] mapImageBytes = routeDAO.getStaticMapImage(
+                    response.getEncodedPolyline(),
+                    response.getStartLocation(),
+                    response.getEndLocation(),
+                    response.getIntermediateLocations()
+            );
+
             List<PlanRouteOutputData.RouteStepDTO> steps = convertStepsToDTO(response.getSteps());
 
             PlanRouteOutputData output = new PlanRouteOutputData(
@@ -69,7 +69,8 @@ public class PlanRouteInteractor implements PlanRouteInputBoundary {
                     response.getTotalDurationSeconds(),
                     null,
                     true,
-                    response.isManualMode()
+                    response.isManualMode(),
+                    mapImageBytes  // Pass map image
             );
 
             presenter.presentRoute(output);

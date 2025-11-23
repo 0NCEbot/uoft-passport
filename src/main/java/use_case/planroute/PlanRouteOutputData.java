@@ -8,7 +8,7 @@ public class PlanRouteOutputData {
         public final String instruction;
         public final int distanceMeters;
         public final int durationSeconds;
-        public final String landmarkName;  // Non-null if this is a landmark step
+        public final String landmarkName;
         public final boolean isLandmark;
 
         public RouteStepDTO(String instruction, int distanceMeters,
@@ -29,11 +29,20 @@ public class PlanRouteOutputData {
     private final String errorMessage;
     private final boolean success;
     private final boolean manualMode;
+    private final byte[] mapImageBytes;  // NEW
 
     public PlanRouteOutputData(String startLocation, String destination,
                                List<RouteStepDTO> steps, int totalDist,
                                int totalDuration, String error, boolean success,
                                boolean manualMode) {
+        this(startLocation, destination, steps, totalDist, totalDuration, error, success, manualMode, null);
+    }
+
+    // Full constructor with map image
+    public PlanRouteOutputData(String startLocation, String destination,
+                               List<RouteStepDTO> steps, int totalDist,
+                               int totalDuration, String error, boolean success,
+                               boolean manualMode, byte[] mapImageBytes) {
         this.startLocation = startLocation;
         this.destination = destination;
         this.steps = steps;
@@ -42,6 +51,7 @@ public class PlanRouteOutputData {
         this.errorMessage = error;
         this.success = success;
         this.manualMode = manualMode;
+        this.mapImageBytes = mapImageBytes;
     }
 
     public String getStartLocation() { return startLocation; }
@@ -52,4 +62,5 @@ public class PlanRouteOutputData {
     public String getErrorMessage() { return errorMessage; }
     public boolean isSuccess() { return success; }
     public boolean isManualMode() { return manualMode; }
+    public byte[] getMapImageBytes() { return mapImageBytes; }  // NEW
 }
