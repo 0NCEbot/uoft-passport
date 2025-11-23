@@ -13,12 +13,17 @@ public class Main {
                 .addBrowseLandmarksView()
                 .addMyProgressView()
                 .addMyProgressUseCase()
+                .addViewHistoryView()
+                .addViewProgressView()  // Add View Progress view
                 .addHomescreenView()
                 .addHomescreenUseCase()
                 .addLoginView()
                 .addLoginUseCase()
                 .addSignupView()
                 .addSignupUseCase()
+                .addHomescreenUseCase()
+                .addPlanRouteView()
+                .addPlanRouteUseCase()
                 .build();
 
         application.pack();

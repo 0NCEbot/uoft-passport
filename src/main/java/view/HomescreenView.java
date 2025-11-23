@@ -10,6 +10,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.awt.image.BufferedImage;
+import java.awt.geom.RoundRectangle2D;
+
 
 public class HomescreenView extends JPanel implements PropertyChangeListener {
     private final String viewName = "homescreen";
@@ -30,12 +33,24 @@ public class HomescreenView extends JPanel implements PropertyChangeListener {
 
 
         //(top panel)- username area
-        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        topPanel.setBackground(Color.WHITE);
-        topPanel.setPreferredSize(new Dimension(getWidth(), 50));
-        usernameLabel = new JLabel("placeholder_username");
+        JPanel topBar = new JPanel(new BorderLayout());
+        topBar.setBackground(Color.WHITE);
+        topBar.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+
+        JPanel userPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        userPanel.setOpaque(false);
+        usernameLabel = new JLabel("Username1!");
         usernameLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-        topPanel.add(usernameLabel);
+        usernameLabel.setForeground(new Color(0, 102, 204));
+        userPanel.add(usernameLabel);
+
+        JLabel logoutLabel = new JLabel("Logout");
+        logoutLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        logoutLabel.setForeground(new Color(0, 102, 204));
+        logoutLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        topBar.add(userPanel, BorderLayout.WEST);
+        topBar.add(logoutLabel, BorderLayout.EAST);
 
         //(bottom panel)- back button area
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -100,20 +115,30 @@ public class HomescreenView extends JPanel implements PropertyChangeListener {
             }
         });
 
+
+
         leftPanel.add(browseLandmarksButton);
         leftPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         leftPanel.add(planRouteButton);
         leftPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         leftPanel.add(myProgressButton);
 
+
+
+
         //(right panel)- image/map
         JPanel rightPanel = new JPanel(new BorderLayout());
         rightPanel.setBackground(Color.WHITE);
+        rightPanel.setBorder(BorderFactory.createEmptyBorder(40, 20, 40, 50)); // Add padding
 
         //load and scale the image
-        ImageIcon originalIcon = new ImageIcon("src/main/resources/placeholder_img.png");
-        Image scaledImage = originalIcon.getImage().getScaledInstance(600, 400, Image.SCALE_SMOOTH);
-        ImageIcon scaledIcon = new ImageIcon(scaledImage);
+        ImageIcon originalIcon = new ImageIcon("src/main/resources/placeholder_img2.png");
+        Image scaledImage = originalIcon.getImage().getScaledInstance(300, 400, Image.SCALE_SMOOTH);
+
+        // Create rounded image
+        BufferedImage roundedImage = createRoundedImage(scaledImage, 30); // 30 = corner radius
+        ImageIcon scaledIcon = new ImageIcon(roundedImage);
+
         JLabel imageLabel = new JLabel();
         imageLabel.setIcon(scaledIcon);
         imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -124,15 +149,16 @@ public class HomescreenView extends JPanel implements PropertyChangeListener {
         centerPanel.add(rightPanel);
 
         //add all panels to main layout
-        add(topPanel, BorderLayout.NORTH);
+        add(topBar, BorderLayout.NORTH);
         add(centerPanel, BorderLayout.CENTER);
         add(bottomPanel, BorderLayout.SOUTH);
     }
 
-
     public void setHomescreenController(HomescreenController controller) {
         this.controller = controller;
     }
+
+
 
     private JButton createStyledButton(String text) {
         JButton button = new JButton(text);
@@ -162,6 +188,36 @@ public class HomescreenView extends JPanel implements PropertyChangeListener {
         return button;
     }
 
+    //using awt to create the rounded edges
+    private BufferedImage createRoundedImage(Image image, int cornerRadius) {
+        // Force the image to load completely
+        ImageIcon temp = new ImageIcon(image);
+        int width = temp.getIconWidth();
+        int height = temp.getIconHeight();
+
+        // Safety check
+        if (width <= 0 || height <= 0) {
+            // Return a default image or handle error
+            BufferedImage defaultImage = new BufferedImage(30, 400, BufferedImage.TYPE_INT_ARGB);
+            return defaultImage;
+        }
+
+        BufferedImage roundedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = roundedImage.createGraphics();
+
+        // Enable anti-aliasing for smooth edges
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        // Create rounded rectangle clip
+        g2.setClip(new RoundRectangle2D.Float(0, 0, width, height, cornerRadius, cornerRadius));
+
+        // Draw the image
+        g2.drawImage(image, 0, 0, null);
+        g2.dispose();
+
+        return roundedImage;
+    }
+
     // ADD THIS METHOD
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
@@ -178,3 +234,6 @@ public class HomescreenView extends JPanel implements PropertyChangeListener {
     }
 
 }
+
+
+

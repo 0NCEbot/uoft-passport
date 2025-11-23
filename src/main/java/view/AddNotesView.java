@@ -143,10 +143,10 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
         notesList.setVisibleRowCount(6);
         JScrollPane notesScroll = new JScrollPane(notesList);
         notesScroll.setAlignmentX(Component.LEFT_ALIGNMENT);
-        notesScroll.setPreferredSize(new Dimension(350, 150));
+        notesScroll.setPreferredSize(new Dimension(300, 150));
 
         // typing area
-        descriptionArea = new JTextArea(5, 25);
+        descriptionArea = new JTextArea(5, 21);
         descriptionArea.setLineWrap(true);
         descriptionArea.setWrapStyleWord(true);
         descriptionArea.setFont(new Font("Arial", Font.PLAIN, 14));
@@ -180,16 +180,19 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
         leftPanel.add(Box.createVerticalStrut(10));
         leftPanel.add(messageLabel);
 
-        // -------- RIGHT SIDE: same card as SelectedPlaceView --------
+        // -------- RIGHT SIDE: copied layout from SelectedPlaceView --------
         JPanel rightPanel = new JPanel();
         rightPanel.setBackground(Color.WHITE);
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-        rightPanel.setBorder(BorderFactory.createEmptyBorder(40, 20, 40, 60));
+        // same padding as SelectedPlaceView
+        rightPanel.setBorder(BorderFactory.createEmptyBorder(40, 0, 40, 40));
 
         imageLabel = new JLabel();
-        imageLabel.setPreferredSize(new Dimension(600, 300));
+        // same preferred size as SelectedPlaceView
+        imageLabel.setPreferredSize(new Dimension(350, 220));
         imageLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        setPlaceholderImage();  // start with placeholder
+        // start with placeholder
+        setPlaceholderImage();
 
         landmarkNameLabel = new JLabel("Landmark Name");
         landmarkNameLabel.setFont(new Font("Arial", Font.BOLD, 24));
@@ -223,7 +226,16 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
 
         // attach panels
         centerPanel.add(leftPanel);
-        centerPanel.add(rightPanel);
+        JScrollPane scroll = new JScrollPane(
+                rightPanel,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+        );
+        scroll.getVerticalScrollBar().setUnitIncrement(16); // smoother scrolling
+        // same border style as SelectedPlaceView
+        scroll.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 20));
+
+        centerPanel.add(scroll);
 
         add(topBar, BorderLayout.NORTH);
         add(centerPanel, BorderLayout.CENTER);
@@ -248,13 +260,21 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
         landmarkNameLabel.setText(state.getLandmarkName());
         descriptionRight.setText(state.getLandmarkDescription());
         addressLabel.setText(state.getAddress());
-        hoursLabel.setText("Hours: " + state.getOpenHours());
+
+        // ---- format hours on multiple lines ----
+        String openHours = state.getOpenHours();
+        if (openHours == null || openHours.isBlank() || "No hours available".equals(openHours)) {
+            hoursLabel.setText("Hours: No hours available");
+        } else {
+            String htmlHours =
+                    "<html>Hours:<br>" + openHours.replace("\n", "<br>") + "</html>";
+            hoursLabel.setText(htmlHours);
+        }
 
         // ===== UPDATE NOTES LIST (ONLY THIS USER’S NOTES) =====
         notesListModel.clear();
         if (state.getNotes() != null) {
             for (AddNotesState.NoteVM n : state.getNotes()) {
-                // e.g. "2024-11-21 10:30 - My note text"
                 String line = n.createdAt + " - " + n.content;
                 notesListModel.addElement(line);
             }
@@ -281,7 +301,7 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
 
     private void setPlaceholderImage() {
         ImageIcon img = new ImageIcon("src/main/resources/placeholder_landmark.jpg");
-        Image scaled = img.getImage().getScaledInstance(600, 300, Image.SCALE_SMOOTH);
+        Image scaled = img.getImage().getScaledInstance(350, 220, Image.SCALE_SMOOTH);
         imageLabel.setIcon(new ImageIcon(scaled));
     }
 
@@ -386,7 +406,7 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
             }
             byte[] bytes = response.body().bytes();
             ImageIcon icon = new ImageIcon(bytes);
-            Image scaled = icon.getImage().getScaledInstance(600, 300, Image.SCALE_SMOOTH);
+            Image scaled = icon.getImage().getScaledInstance(350, 220, Image.SCALE_SMOOTH);
             return new ImageIcon(scaled);
         }
     }
