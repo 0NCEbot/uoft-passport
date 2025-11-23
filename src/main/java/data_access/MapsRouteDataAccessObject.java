@@ -39,14 +39,14 @@ public class MapsRouteDataAccessObject implements RouteDataAccessInterface {
                 System.out.println("[ROUTE DAO] Start location not found: " + startLocationName);
                 return new RouteResponse(
                         new ArrayList<>(), 0, 0, false,
-                        "Start location '" + startLocationName + "' not found. Please enter a valid landmark name."
+                        "<html>Start location '" + startLocationName + "' not found.<br>Please enter a valid landmark name.</html>"
                 );
             }
             if (destinationLocation == null) {
                 System.out.println("[ROUTE DAO] Destination not found: " + destinationName);
                 return new RouteResponse(
                         new ArrayList<>(), 0, 0, false,
-                        "Destination '" + destinationName + "' not found. Please enter a valid landmark name."
+                        "<html>Destination '" + destinationName + "' not found.<br>Please enter a valid landmark name.</html>"
                 );
             }
 
@@ -71,7 +71,7 @@ public class MapsRouteDataAccessObject implements RouteDataAccessInterface {
                         System.out.println("[ROUTE DAO] Intermediate stop not found: " + intermediateName);
                         return new RouteResponse(
                                 new ArrayList<>(), 0, 0, false,
-                                "Intermediate stop '" + intermediateName + "' not found. Please enter a valid landmark name."
+                                "<html>Intermediate stop '" + intermediateName + "' not found.<br>Please enter a valid landmark name.</html>"
                         );
                     }
                 }

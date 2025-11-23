@@ -216,7 +216,7 @@ public class PlanRouteView extends JPanel implements PropertyChangeListener {
 
         JScrollPane stepsScroll = new JScrollPane(stepsList);
         stepsScroll.setAlignmentX(Component.LEFT_ALIGNMENT);
-        stepsScroll.setPreferredSize(new Dimension(350, 200));
+        stepsScroll.setPreferredSize(new Dimension(150, 50));
 
         // Action buttons panel
         JPanel actionButtonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
