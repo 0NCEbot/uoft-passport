@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class MapsRouteDataAccessObject implements RouteDataAccessInterface {
 
-    private static final String API_KEY = "AIzaSyAJi30DYnkCZjnXRYpzWa3L1aToUbHDz2Q____";
+    private static final String API_KEY = "AIzaSyCk9bPskLw7eUI-_Y9G6tW8eDAE-iXI8Ms";
     private static final String ROUTES_API_URL = "https://routes.googleapis.com/directions/v2:computeRoutes";
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
@@ -29,18 +29,25 @@ public class MapsRouteDataAccessObject implements RouteDataAccessInterface {
     public RouteResponse getRoute(String startLocationName, String destinationName, String[] intermediateStopNames) {
         try {
             // Step 1: Resolve landmark names to coordinates AND track canonical names
-            Map<String, String> nameResolutions = new HashMap<>(); // user input -> canonical name
+            Map<String, String> nameResolutions = new HashMap<>();
 
             Location startLocation = resolveLandmarkToLocation(startLocationName, nameResolutions);
             Location destinationLocation = resolveLandmarkToLocation(destinationName, nameResolutions);
 
+            // Check for invalid landmarks BEFORE proceeding
             if (startLocation == null) {
                 System.out.println("[ROUTE DAO] Start location not found: " + startLocationName);
-                return null;
+                return new RouteResponse(
+                        new ArrayList<>(), 0, 0, false,
+                        "Start location '" + startLocationName + "' not found. Please enter a valid landmark name."
+                );
             }
             if (destinationLocation == null) {
                 System.out.println("[ROUTE DAO] Destination not found: " + destinationName);
-                return null;
+                return new RouteResponse(
+                        new ArrayList<>(), 0, 0, false,
+                        "Destination '" + destinationName + "' not found. Please enter a valid landmark name."
+                );
             }
 
             // Get canonical names (after fuzzy matching)
@@ -56,10 +63,16 @@ public class MapsRouteDataAccessObject implements RouteDataAccessInterface {
                 for (String intermediateName : intermediateStopNames) {
                     Location loc = resolveLandmarkToLocation(intermediateName, nameResolutions);
                     if (loc != null) {
-                        // Use the resolved (canonical) name instead of user input
                         String resolvedName = nameResolutions.get(intermediateName);
                         waypointNames.add(resolvedName);
                         waypointLocations.add(loc);
+                    } else {
+                        // Invalid intermediate stop
+                        System.out.println("[ROUTE DAO] Intermediate stop not found: " + intermediateName);
+                        return new RouteResponse(
+                                new ArrayList<>(), 0, 0, false,
+                                "Intermediate stop '" + intermediateName + "' not found. Please enter a valid landmark name."
+                        );
                     }
                 }
             }
@@ -71,15 +84,16 @@ public class MapsRouteDataAccessObject implements RouteDataAccessInterface {
             // Step 4: Call Google Routes API
             JSONObject responseJson = callRoutesAPI(requestBody);
             if (responseJson == null) {
-                return null;
+                // API failed - use manual mode with resolved names
+                return handleManualMode(resolvedStartName, resolvedDestName, waypointNames);
             }
 
             // Step 5: Parse response with RESOLVED landmark names
             List<RouteStep> steps = extractStepsWithLandmarks(
                     responseJson,
-                    resolvedStartName,      // Use resolved name
-                    resolvedDestName,       // Use resolved name
-                    waypointNames           // Already resolved
+                    resolvedStartName,
+                    resolvedDestName,
+                    waypointNames
             );
 
             int totalDistance = responseJson
@@ -93,11 +107,14 @@ public class MapsRouteDataAccessObject implements RouteDataAccessInterface {
                     .getString("duration");
             int totalDuration = parseDurationToSeconds(durationStr);
 
-            return new RouteResponse(steps, totalDistance, totalDuration, true);
+            return new RouteResponse(steps, totalDistance, totalDuration, true, null);
 
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            return new RouteResponse(
+                    new ArrayList<>(), 0, 0, false,
+                    "An error occurred while planning the route. Please try again."
+            );
         }
     }
 
@@ -113,7 +130,6 @@ public class MapsRouteDataAccessObject implements RouteDataAccessInterface {
         // Try exact match (case-insensitive)
         for (var landmark : landmarkDAO.getLandmarks()) {
             if (landmark.getLandmarkName().equalsIgnoreCase(landmarkName.trim())) {
-                // Store the mapping: user input -> canonical name
                 nameResolutions.put(landmarkName, landmark.getLandmarkName());
                 return landmark.getLocation();
             }
@@ -124,7 +140,6 @@ public class MapsRouteDataAccessObject implements RouteDataAccessInterface {
         for (var landmark : landmarkDAO.getLandmarks()) {
             if (landmark.getLandmarkName().toLowerCase().contains(lowerQuery)) {
                 System.out.println("[ROUTE DAO] Partial matched '" + landmarkName + "' to '" + landmark.getLandmarkName() + "'");
-                // Store the mapping: user input -> canonical name
                 nameResolutions.put(landmarkName, landmark.getLandmarkName());
                 return landmark.getLocation();
             }
@@ -139,14 +154,14 @@ public class MapsRouteDataAccessObject implements RouteDataAccessInterface {
     private String buildRouteRequest(Location start, Location destination, Location[] intermediates) {
         JSONObject request = new JSONObject();
 
-        // Origin - wrap in "location" object with "latLng"
+        // Origin
         JSONObject origin = new JSONObject();
         JSONObject originLocation = new JSONObject();
         originLocation.put("latLng", createLatLngJson(start));
         origin.put("location", originLocation);
         request.put("origin", origin);
 
-        // Destination - wrap in "location" object with "latLng"
+        // Destination
         JSONObject dest = new JSONObject();
         JSONObject destLocation = new JSONObject();
         destLocation.put("latLng", createLatLngJson(destination));
@@ -170,7 +185,6 @@ public class MapsRouteDataAccessObject implements RouteDataAccessInterface {
             }
         }
 
-        // Travel mode
         request.put("travelMode", "WALK");
 
         return request.toString();
@@ -203,9 +217,6 @@ public class MapsRouteDataAccessObject implements RouteDataAccessInterface {
         try (Response response = httpClient.newCall(request).execute()) {
             if (!response.isSuccessful() || response.body() == null) {
                 System.out.println("[ROUTE DAO] API call failed: " + response.code());
-                if (response.body() != null) {
-                    System.out.println("[ROUTE DAO] Error: " + response.body().string());
-                }
                 return null;
             }
 
@@ -216,8 +227,34 @@ public class MapsRouteDataAccessObject implements RouteDataAccessInterface {
     }
 
     /**
+     * Handle manual mode with resolved landmark names.
+     */
+    private RouteResponse handleManualMode(String startName, String destName, List<String> intermediateNames) {
+        List<RouteStep> manualSteps = new ArrayList<>();
+
+        int stepIndex = 0;
+
+        // Start landmark
+        manualSteps.add(new RouteStep(stepIndex++, "📍 " + startName, 0, 0));
+
+        // Intermediate landmarks
+        for (String intermediateName : intermediateNames) {
+            manualSteps.add(new RouteStep(stepIndex++, "Visit: " + intermediateName, 0, 0));
+            manualSteps.add(new RouteStep(stepIndex++, "📍 " + intermediateName, 0, 0));
+        }
+
+        // End landmark
+        manualSteps.add(new RouteStep(stepIndex++, "Navigate to: " + destName, 0, 0));
+        manualSteps.add(new RouteStep(stepIndex, "📍 " + destName, 0, 0));
+
+        return new RouteResponse(
+                manualSteps, 0, 0, true,
+                "API unavailable. Using self-guided mode with resolved landmark names."
+        );
+    }
+
+    /**
      * Extract individual route steps from the API response WITH landmark markers.
-     * Inserts landmark steps at the start, between legs, and at the end.
      */
     private List<RouteStep> extractStepsWithLandmarks(JSONObject responseJson,
                                                       String startName,
@@ -239,16 +276,15 @@ public class MapsRouteDataAccessObject implements RouteDataAccessInterface {
 
             int stepIndex = 0;
 
-            // Add START landmark step (using canonical name)
+            // Add START landmark step
             steps.add(new RouteStep(stepIndex++, "📍 " + startName, 0, 0));
 
-            // Process each leg (there will be N+1 legs for N intermediates)
+            // Process each leg
             for (int legIdx = 0; legIdx < legs.length(); legIdx++) {
                 JSONObject leg = legs.getJSONObject(legIdx);
                 JSONArray stepsArray = leg.optJSONArray("steps");
 
                 if (stepsArray != null) {
-                    // Add navigation steps for this leg
                     for (int i = 0; i < stepsArray.length(); i++) {
                         JSONObject stepJson = stepsArray.getJSONObject(i);
                         String instruction = extractInstruction(stepJson);
@@ -259,13 +295,13 @@ public class MapsRouteDataAccessObject implements RouteDataAccessInterface {
                     }
                 }
 
-                // After each leg (except the last), add intermediate landmark (using canonical name)
+                // Add intermediate landmark after each leg (except last)
                 if (legIdx < intermediateNames.size()) {
                     steps.add(new RouteStep(stepIndex++, "📍 " + intermediateNames.get(legIdx), 0, 0));
                 }
             }
 
-            // Add END landmark step (using canonical name)
+            // Add END landmark step
             steps.add(new RouteStep(stepIndex++, "📍 " + destName, 0, 0));
 
         } catch (Exception e) {
@@ -291,7 +327,6 @@ public class MapsRouteDataAccessObject implements RouteDataAccessInterface {
             // Fall back to distance text
         }
 
-        // Fallback: use localized distance
         try {
             JSONObject localizedValues = stepJson.optJSONObject("localizedValues");
             if (localizedValues != null) {
@@ -311,7 +346,7 @@ public class MapsRouteDataAccessObject implements RouteDataAccessInterface {
     }
 
     /**
-     * Parse duration from staticDuration field (e.g. "45s" or "2 mins")
+     * Parse duration from staticDuration field.
      */
     private int extractDurationSeconds(JSONObject stepJson) {
         try {
@@ -336,7 +371,7 @@ public class MapsRouteDataAccessObject implements RouteDataAccessInterface {
     }
 
     /**
-     * Parse duration strings like "45s", "1 min", "2 mins" into seconds.
+     * Parse duration strings into seconds.
      */
     private int parseDurationToSeconds(String durationStr) {
         if (durationStr == null || durationStr.isBlank()) {
@@ -346,20 +381,17 @@ public class MapsRouteDataAccessObject implements RouteDataAccessInterface {
         durationStr = durationStr.trim().toLowerCase();
 
         try {
-            // Handle "45s" or "427s" format
             if (durationStr.endsWith("s")) {
                 String numStr = durationStr.substring(0, durationStr.length() - 1);
                 return Integer.parseInt(numStr);
             }
 
-            // Handle "1 min" or "2 mins" format
             if (durationStr.contains("min")) {
                 String numStr = durationStr.split("\\s+")[0];
                 int minutes = Integer.parseInt(numStr);
                 return minutes * 60;
             }
 
-            // Handle "1 hour" or "2 hours" format
             if (durationStr.contains("hour")) {
                 String numStr = durationStr.split("\\s+")[0];
                 int hours = Integer.parseInt(numStr);
