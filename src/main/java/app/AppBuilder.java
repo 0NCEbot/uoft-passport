@@ -266,7 +266,6 @@ public class AppBuilder {
         return this;
     }
 
-
     public AppBuilder addPlanRouteUseCase() {
         RouteDataAccessInterface routeDAO =
                 new MapsRouteDataAccessObject(landmarkDAO);
@@ -279,7 +278,6 @@ public class AppBuilder {
 
         planRouteController = new PlanRouteController(interactor, planRouteViewModel);
         planRouteView.setPlanRouteController(planRouteController);
-
         return this;
     }
 
