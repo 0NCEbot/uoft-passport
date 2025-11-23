@@ -11,12 +11,14 @@ public class Main {
                 .addSelectedPlaceView()
                 .addSelectedPlaceUseCase()
                 .addBrowseLandmarksView()
+                .addMyProgressView()
+                .addMyProgressUseCase()
                 .addHomescreenView()
-                .addLoginView()
-                .addSignupView()
-                .addLoginUseCase()
-                .addSignupUseCase()
                 .addHomescreenUseCase()
+                .addLoginView()
+                .addLoginUseCase()
+                .addSignupView()
+                .addSignupUseCase()
                 .build();
 
         application.pack();

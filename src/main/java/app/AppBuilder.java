@@ -1,30 +1,15 @@
 package app;
 
-import data_access.JsonUserDataAccessObject;
-import data_access.JsonLandmarkDataAccessObject;
-import data_access.LandmarkDataAccessInterface;
-import data_access.UserDataAccessInterface;
+import data_access.*;
 import entity.UserFactory;
 import interface_adapter.ViewManagerModel;
-import interface_adapter.browselandmarks.BrowseLandmarksController;
-import interface_adapter.browselandmarks.BrowseLandmarksPresenter;
-import interface_adapter.browselandmarks.BrowseLandmarksViewModel;
-import interface_adapter.homescreen.HomescreenController;
-import interface_adapter.homescreen.HomescreenPresenter;
-import interface_adapter.homescreen.HomescreenViewModel;
-import interface_adapter.login.LoginController;
-import interface_adapter.login.LoginPresenter;
-import interface_adapter.login.LoginViewModel;
-import interface_adapter.selectedplace.SelectedPlaceController;
-import interface_adapter.selectedplace.SelectedPlacePresenter;
-import interface_adapter.selectedplace.SelectedPlaceViewModel;
-import interface_adapter.signup.SignupController;
-import interface_adapter.signup.SignupPresenter;
-import interface_adapter.signup.SignupViewModel;
-// NEW imports for Notes
-import interface_adapter.addnotes.AddNotesController;
-import interface_adapter.addnotes.AddNotesPresenter;
-import interface_adapter.addnotes.AddNotesViewModel;
+import interface_adapter.browselandmarks.*;
+import interface_adapter.homescreen.*;
+import interface_adapter.login.*;
+import interface_adapter.myprogress.*;
+import interface_adapter.selectedplace.*;
+import interface_adapter.signup.*;
+import interface_adapter.addnotes.*;
 
 import use_case.browselandmarks.BrowseLandmarksInputBoundary;
 import use_case.browselandmarks.BrowseLandmarksInteractor;
@@ -34,6 +19,9 @@ import use_case.homescreen.HomescreenOutputBoundary;
 import use_case.login.LoginInputBoundary;
 import use_case.login.LoginInteractor;
 import use_case.login.LoginOutputBoundary;
+import use_case.myprogress.MyProgressInputBoundary;
+import use_case.myprogress.MyProgressInteractor;
+import use_case.myprogress.MyProgressOutputBoundary;
 import use_case.selectedplace.SelectedPlaceInputBoundary;
 import use_case.selectedplace.SelectedPlaceInteractor;
 import use_case.selectedplace.SelectedPlaceOutputBoundary;
@@ -45,14 +33,8 @@ import use_case.addnotes.AddNotesInputBoundary;
 import use_case.addnotes.AddNotesInteractor;
 import use_case.addnotes.AddNotesOutputBoundary;
 
-import view.BrowseLandmarksView;
-import view.HomescreenView;
-import view.LoginView;
-import view.SelectedPlaceView;
-import view.SignupView;
-import view.ViewManager;
+import view.*;
 // NEW Notes view
-import view.AddNotesView;
 
 import javax.swing.*;
 import java.awt.*;
@@ -69,11 +51,11 @@ public class AppBuilder {
     private final ViewManager viewManager =
             new ViewManager(cardPanel, cardLayout, viewManagerModel);
 
-    private final LandmarkDataAccessInterface landmarkDAO =
+    private final LandmarkDataAccessInterface landmarkDataAccessObject =
             new JsonLandmarkDataAccessObject("minimal_landmarks.json");
 
     private final UserDataAccessInterface userDataAccessObject =
-            new JsonUserDataAccessObject("users.json", userFactory, landmarkDAO);
+            new JsonUserDataAccessObject("users.json", userFactory, landmarkDataAccessObject);
 
     // ---- view models & views ----
     private LoginViewModel loginViewModel;
@@ -94,6 +76,10 @@ public class AppBuilder {
     // NEW: notes VM + view
     private AddNotesViewModel notesViewModel;
     private AddNotesView notesView;
+
+    private MyProgressViewModel myProgressViewModel;
+    private MyProgressView myProgressView;
+
 
     // ---- use case controllers ----
     private SelectedPlaceController selectedPlaceController;
@@ -128,7 +114,6 @@ public class AppBuilder {
         return this;
     }
 
-    // NEW: Notes view (no use case yet)
     public AppBuilder addNotesView() {
         notesViewModel = new AddNotesViewModel();
         notesView = new AddNotesView(notesViewModel, viewManagerModel);
@@ -136,7 +121,6 @@ public class AppBuilder {
         return this;
     }
 
-    /** Create ONLY SelectedPlaceView (no use case yet). */
     public AppBuilder addSelectedPlaceView() {
         selectedPlaceViewModel = new SelectedPlaceViewModel();
         selectedPlaceView = new SelectedPlaceView(selectedPlaceViewModel, viewManagerModel);
@@ -144,25 +128,10 @@ public class AppBuilder {
         return this;
     }
 
-    /** Wire SelectedPlace Use Case + Controller.
-     *
-     *  NOTE: assumes notesViewModel is already created (call addNotesView() first).
-     */
-    public AppBuilder addSelectedPlaceUseCase() {
-        SelectedPlaceOutputBoundary spPresenter =
-                new SelectedPlacePresenter(
-                        selectedPlaceViewModel,
-                        notesViewModel,
-                        viewManagerModel,
-                        userDataAccessObject
-                );
-
-        SelectedPlaceInputBoundary spInteractor =
-                new SelectedPlaceInteractor(landmarkDAO, userDataAccessObject, spPresenter);
-
-        selectedPlaceController = new SelectedPlaceController(spInteractor);
-        selectedPlaceView.setSelectedPlaceController(selectedPlaceController);
-
+    public AppBuilder addMyProgressView() {
+        myProgressViewModel = new MyProgressViewModel();
+        myProgressView = new MyProgressView(myProgressViewModel, viewManagerModel);
+        cardPanel.add(myProgressView, myProgressView.getViewName());
         return this;
     }
 
@@ -173,7 +142,7 @@ public class AppBuilder {
                 new BrowseLandmarksPresenter(browseLandmarksViewModel);
 
         BrowseLandmarksInputBoundary interactor =
-                new BrowseLandmarksInteractor(landmarkDAO, presenter, userDataAccessObject);
+                new BrowseLandmarksInteractor(landmarkDataAccessObject, presenter, userDataAccessObject);
 
         browseLandmarksController = new BrowseLandmarksController(interactor);
 
@@ -204,7 +173,9 @@ public class AppBuilder {
 
     public AppBuilder addHomescreenUseCase() {
         HomescreenOutputBoundary output =
-                new HomescreenPresenter(homescreenViewModel, viewManagerModel, browseLandmarksViewModel);
+                new HomescreenPresenter(homescreenViewModel,
+                        viewManagerModel,
+                        browseLandmarksViewModel);
 
         HomescreenInputBoundary interactor =
                 new HomescreenInteractor(output);
@@ -236,10 +207,47 @@ public class AppBuilder {
                 new AddNotesPresenter(notesViewModel, viewManagerModel);
 
         AddNotesInputBoundary notesInteractor =
-                new AddNotesInteractor(userDataAccessObject, landmarkDAO, notesOutput);
+                new AddNotesInteractor(userDataAccessObject, landmarkDataAccessObject, notesOutput);
 
         notesController = new AddNotesController(notesInteractor, notesViewModel);
         notesView.setNotesController(notesController);
+        return this;
+    }
+
+    /** Wire SelectedPlace Use Case + Controller.
+     *
+     *  NOTE: assumes notesViewModel is already created (call addNotesView() first).
+     */
+    public AppBuilder addSelectedPlaceUseCase() {
+        SelectedPlaceOutputBoundary spPresenter =
+                new SelectedPlacePresenter(
+                        selectedPlaceViewModel,
+                        notesViewModel,
+                        viewManagerModel,
+                        userDataAccessObject
+                );
+
+        SelectedPlaceInputBoundary spInteractor =
+                new SelectedPlaceInteractor(landmarkDataAccessObject, userDataAccessObject, spPresenter);
+
+        selectedPlaceController = new SelectedPlaceController(spInteractor);
+        selectedPlaceView.setSelectedPlaceController(selectedPlaceController);
+
+        return this;
+    }
+
+    public AppBuilder addMyProgressUseCase() {
+        MyProgressOutputBoundary presenter = new MyProgressPresenter(myProgressViewModel);
+
+        MyProgressInputBoundary interactor = new MyProgressInteractor(
+                userDataAccessObject,
+                landmarkDataAccessObject,
+                presenter
+        );
+
+        MyProgressController controller = new MyProgressController(interactor);
+        myProgressView.setMyProgressController(controller);
+
         return this;
     }
 

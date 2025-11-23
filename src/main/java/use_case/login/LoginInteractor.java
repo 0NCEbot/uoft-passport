@@ -1,6 +1,7 @@
 package use_case.login;
 
 import entity.User;
+import interface_adapter.ViewModel;
 
 /**
  * The Login Interactor.
@@ -35,6 +36,9 @@ public class LoginInteractor implements LoginInputBoundary {
                 final User user = userDataAccessObject.get(loginInputData.getUsername());
 
                 userDataAccessObject.setCurrentUsername(username);
+
+                // Just publish one event - other views initialize themselves
+                ViewModel.publish("userLoggedIn", username);
 
                 final LoginOutputData loginOutputData = new LoginOutputData(user.getUsername());
                 loginPresenter.prepareSuccessView(loginOutputData);
