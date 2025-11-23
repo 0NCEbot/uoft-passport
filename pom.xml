@@ -16,7 +16,7 @@
             <version>4.12.0</version>
         </dependency>
 
-        <!-- org.json (you already had this) -->
+        <!-- org.json -->
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
