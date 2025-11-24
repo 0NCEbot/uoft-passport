@@ -112,7 +112,7 @@ public class EditNoteDialogView extends JDialog implements PropertyChangeListene
         JButton saveButton = new JButton("Save Changes");
         saveButton.setFont(new Font("Arial", Font.BOLD, 14));
         saveButton.setBackground(new Color(0, 102, 204));
-        saveButton.setForeground(Color.WHITE);
+        saveButton.setForeground(Color.BLACK);
         saveButton.setFocusPainted(false);
         saveButton.addActionListener(e -> handleSave());
 
