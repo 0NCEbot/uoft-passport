@@ -119,6 +119,7 @@ public class AddNotesInteractor implements AddNotesInputBoundary {
                         .equalsIgnoreCase(landmarkName))
                 .forEach(n -> noteDTOs.add(
                         new AddNotesOutputData.NoteDTO(
+                                n.getNoteId(),
                                 fmt.format(n.getCreatedAt()),
                                 n.getContent()
                         )

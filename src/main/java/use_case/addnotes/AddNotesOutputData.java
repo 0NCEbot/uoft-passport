@@ -1,4 +1,3 @@
-// src/java/use_case/addnotes/AddNotesOutputData.java
 package use_case.addnotes;
 
 import java.util.List;
@@ -6,10 +5,12 @@ import java.util.List;
 public class AddNotesOutputData {
 
     public static class NoteDTO {
+        public final String noteId;
         public final String createdAt;
         public final String content;
 
-        public NoteDTO(String createdAt, String content) {
+        public NoteDTO(String noteId, String createdAt, String content) {
+            this.noteId = noteId;
             this.createdAt = createdAt;
             this.content = content;
         }
