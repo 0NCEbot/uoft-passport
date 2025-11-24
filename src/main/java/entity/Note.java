@@ -29,6 +29,16 @@ public class Note {
         this.updatedAt = updatedAt;
     }
 
+    public Note withUpdatedContent(String newContent) {
+        return new Note(
+                this.noteId,
+                this.landmark,
+                newContent,
+                this.createdAt,
+                Instant.now()  // Update the timestamp
+        );
+    }
+
     public String getNoteId() {
         return noteId;
     }
