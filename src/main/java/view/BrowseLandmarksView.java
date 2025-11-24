@@ -1,5 +1,6 @@
 package view;
 
+import interface_adapter.EventBus;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.browselandmarks.BrowseLandmarksController;
 import interface_adapter.browselandmarks.BrowseLandmarksState;
@@ -10,6 +11,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class BrowseLandmarksView extends JPanel implements PropertyChangeListener {
 
@@ -25,6 +29,11 @@ public class BrowseLandmarksView extends JPanel implements PropertyChangeListene
 
     private JLabel usernameLabel;
 
+    // For filtering
+    private List<BrowseLandmarksState.LandmarkVM> allLandmarks = new ArrayList<>();
+    private JComboBox<String> typeFilterDropdown;
+    private String currentVisitFilter = "All";  // "All", "Unvisited", "Visited"
+
     public BrowseLandmarksView(BrowseLandmarksViewModel viewModel,
                                BrowseLandmarksController controller,
                                SelectedPlaceController selectedPlaceController,
@@ -35,6 +44,20 @@ public class BrowseLandmarksView extends JPanel implements PropertyChangeListene
         this.selectedPlaceController = selectedPlaceController;
 
         this.viewModel.addPropertyChangeListener(this);
+
+        // Subscribe to user login to load landmarks with correct visit counts
+        EventBus.subscribe("userLoggedIn", payload -> {
+            String username = (String) payload;
+            BrowseLandmarksState state = viewModel.getState();
+            state.setUsername(username);
+            viewModel.setState(state);
+            controller.loadLandmarks();
+        });
+
+        // Subscribe to visit modifications to refresh landmark visit counts
+        EventBus.subscribe("visitModified", payload -> {
+            controller.loadLandmarks();
+        });
 
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
@@ -92,7 +115,47 @@ public class BrowseLandmarksView extends JPanel implements PropertyChangeListene
         titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         leftPanel.add(titleLabel);
-        leftPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        leftPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+
+        // ======= FILTER PANEL =======
+        JPanel filterPanel = new JPanel();
+        filterPanel.setLayout(new BoxLayout(filterPanel, BoxLayout.Y_AXIS));
+        filterPanel.setBackground(Color.WHITE);
+        filterPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        filterPanel.setMaximumSize(new Dimension(320, 100));
+
+        // Type filter dropdown
+        JPanel typeFilterRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        typeFilterRow.setBackground(Color.WHITE);
+        JLabel typeLabel = new JLabel("Type: ");
+        typeLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        typeFilterDropdown = new JComboBox<>(new String[]{"All Types"});
+        typeFilterDropdown.setPreferredSize(new Dimension(180, 25));
+        typeFilterDropdown.setFont(new Font("Arial", Font.PLAIN, 13));
+        typeFilterRow.add(typeLabel);
+        typeFilterRow.add(typeFilterDropdown);
+
+        // Visit filter buttons
+        JPanel visitFilterRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        visitFilterRow.setBackground(Color.WHITE);
+        JLabel visitLabel = new JLabel("Visits: ");
+        visitLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        visitFilterRow.add(visitLabel);
+
+        JButton allButton = createFilterButton("All", true);
+        JButton unvisitedButton = createFilterButton("Unvisited", false);
+        JButton visitedButton = createFilterButton("Visited", false);
+
+        visitFilterRow.add(allButton);
+        visitFilterRow.add(unvisitedButton);
+        visitFilterRow.add(visitedButton);
+
+        filterPanel.add(typeFilterRow);
+        filterPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+        filterPanel.add(visitFilterRow);
+
+        leftPanel.add(filterPanel);
+        leftPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
         // BIGGER LIST
         landmarkList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -171,12 +234,42 @@ public class BrowseLandmarksView extends JPanel implements PropertyChangeListene
 
         BrowseLandmarksState state = (BrowseLandmarksState) evt.getNewValue();
 
-        listModel.clear();
-        for (BrowseLandmarksState.LandmarkVM vm : state.getLandmarks()) {
-            listModel.addElement(vm.name);
+        // Store all landmarks for filtering
+        allLandmarks = new ArrayList<>(state.getLandmarks());
+
+        // Store current filter selections to preserve them
+        String previousTypeSelection = (String) typeFilterDropdown.getSelectedItem();
+
+        // Populate type dropdown with unique types
+        List<String> uniqueTypes = allLandmarks.stream()
+                .map(vm -> vm.type)
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+
+        typeFilterDropdown.removeAllItems();
+        typeFilterDropdown.addItem("All Types");
+        for (String type : uniqueTypes) {
+            typeFilterDropdown.addItem(type);
         }
 
-        mapPanel.setLandmarks(state.getLandmarks());
+        // Restore previous type selection if it still exists
+        if (previousTypeSelection != null) {
+            for (int i = 0; i < typeFilterDropdown.getItemCount(); i++) {
+                if (typeFilterDropdown.getItemAt(i).equals(previousTypeSelection)) {
+                    typeFilterDropdown.setSelectedIndex(i);
+                    break;
+                }
+            }
+        }
+
+        // Add listener for type dropdown (only once)
+        if (typeFilterDropdown.getActionListeners().length == 0) {
+            typeFilterDropdown.addActionListener(e -> applyFilters());
+        }
+
+        // Apply filters to show landmarks
+        applyFilters();
 
         String username = viewModel.getState().getUsername();
         if (username != null && !username.isEmpty()) {
@@ -186,5 +279,81 @@ public class BrowseLandmarksView extends JPanel implements PropertyChangeListene
 
     public String getViewName() {
         return viewName;
+    }
+
+    private JButton createFilterButton(String text, boolean isSelected) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("Arial", Font.PLAIN, 12));
+        button.setPreferredSize(new Dimension(80, 25));
+        button.setFocusPainted(false);
+        button.setOpaque(true);
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        if (isSelected) {
+            button.setBackground(new Color(0, 102, 204));
+            button.setForeground(Color.WHITE);
+            button.setBorderPainted(false);
+        } else {
+            button.setBackground(Color.WHITE);
+            button.setForeground(new Color(0, 102, 204));
+            button.setBorder(BorderFactory.createLineBorder(new Color(0, 102, 204), 1));
+        }
+
+        // Add action listener to handle button clicks
+        button.addActionListener(e -> {
+            currentVisitFilter = text;
+            // Update all visit filter buttons
+            Container parent = button.getParent();
+            for (Component comp : parent.getComponents()) {
+                if (comp instanceof JButton) {
+                    JButton btn = (JButton) comp;
+                    String btnText = btn.getText();
+                    if (btnText.equals("All") || btnText.equals("Unvisited") || btnText.equals("Visited")) {
+                        if (btnText.equals(text)) {
+                            btn.setBackground(new Color(0, 102, 204));
+                            btn.setForeground(Color.WHITE);
+                            btn.setBorderPainted(false);
+                        } else {
+                            btn.setBackground(Color.WHITE);
+                            btn.setForeground(new Color(0, 102, 204));
+                            btn.setBorder(BorderFactory.createLineBorder(new Color(0, 102, 204), 1));
+                        }
+                    }
+                }
+            }
+            applyFilters();
+        });
+
+        return button;
+    }
+
+    private void applyFilters() {
+        String selectedType = (String) typeFilterDropdown.getSelectedItem();
+
+        List<BrowseLandmarksState.LandmarkVM> filtered = allLandmarks.stream()
+                .filter(landmark -> {
+                    // Type filter
+                    boolean typeMatch = "All Types".equals(selectedType) || landmark.type.equals(selectedType);
+
+                    // Visit filter
+                    boolean visitMatch = true;
+                    if ("Unvisited".equals(currentVisitFilter)) {
+                        visitMatch = landmark.visitCount == 0;
+                    } else if ("Visited".equals(currentVisitFilter)) {
+                        visitMatch = landmark.visitCount > 0;
+                    }
+
+                    return typeMatch && visitMatch;
+                })
+                .collect(Collectors.toList());
+
+        // Update the list
+        listModel.clear();
+        for (BrowseLandmarksState.LandmarkVM vm : filtered) {
+            listModel.addElement(vm.name);
+        }
+
+        // Update the map with filtered landmarks
+        mapPanel.setLandmarks(filtered);
     }
 }

@@ -100,6 +100,9 @@ public class JsonLandmarkDataAccessObject implements LandmarkDataAccessInterface
     private LandmarkInfo fetchLandmarkInfoFromPlaces(String name,
                                                      double lat,
                                                      double lng) {
+        // Fallback categorization in case API fails or returns generic types
+        String fallbackType = categorizeLandmark(name);
+
         try {
             String url = "https://places.googleapis.com/v1/places:searchText";
 
@@ -133,13 +136,13 @@ public class JsonLandmarkDataAccessObject implements LandmarkDataAccessInterface
 
             try (Response response = httpClient.newCall(request).execute()) {
                 if (!response.isSuccessful() || response.body() == null) {
-                    return defaultInfo();
+                    return defaultInfo(fallbackType);
                 }
                 String resp = response.body().string();
                 JSONObject json = new JSONObject(resp);
                 JSONArray places = json.optJSONArray("places");
                 if (places == null || places.length() == 0) {
-                    return defaultInfo();
+                    return defaultInfo(fallbackType);
                 }
 
                 JSONObject place = places.getJSONObject(0);
@@ -149,10 +152,12 @@ public class JsonLandmarkDataAccessObject implements LandmarkDataAccessInterface
                         "Address not available"
                 );
 
-                String type = place.optString(
-                        "primaryType",
-                        "unknown"
-                );
+                // Try to get type from Google Places API
+                String googleType = place.optString("primaryType", null);
+
+                // Use hybrid approach: prefer Google Places type if available and meaningful,
+                // otherwise use our custom categorization
+                String type = selectBestType(googleType, fallbackType);
 
                 String description = "No description available";
                 JSONObject editorial = place.optJSONObject("editorialSummary");
@@ -192,16 +197,113 @@ public class JsonLandmarkDataAccessObject implements LandmarkDataAccessInterface
 
         } catch (Exception e) {
             e.printStackTrace();
-            return defaultInfo();
+            return defaultInfo(fallbackType);
         }
     }
 
-    private LandmarkInfo defaultInfo() {
+    private LandmarkInfo defaultInfo(String type) {
         return new LandmarkInfo(
                 "Address not available",
                 "No description available",
                 "No hours available",
-                "unknown"
+                type
         );
+    }
+
+    /**
+     * Selects the best type between Google Places API type and custom categorization.
+     * Prefers Google Places type if it's specific and meaningful, otherwise uses custom.
+     */
+    private String selectBestType(String googleType, String customType) {
+        // If Google Places type is null, empty, or generic, use custom
+        if (googleType == null || googleType.isEmpty() ||
+            googleType.equals("unknown") ||
+            googleType.equals("point_of_interest") ||
+            googleType.equals("establishment")) {
+            return customType;
+        }
+
+        // Convert Google Places type to user-friendly format
+        return formatGooglePlacesType(googleType);
+    }
+
+    /**
+     * Formats Google Places API types into user-friendly category names.
+     */
+    private String formatGooglePlacesType(String googleType) {
+        // Convert snake_case to Title Case
+        String[] words = googleType.split("_");
+        StringBuilder formatted = new StringBuilder();
+        for (String word : words) {
+            if (formatted.length() > 0) {
+                formatted.append(" ");
+            }
+            formatted.append(word.substring(0, 1).toUpperCase());
+            formatted.append(word.substring(1).toLowerCase());
+        }
+        return formatted.toString();
+    }
+
+    /**
+     * Categorizes UofT landmarks into meaningful types based on their names.
+     */
+    private String categorizeLandmark(String name) {
+        String lowerName = name.toLowerCase();
+
+        // Libraries
+        if (lowerName.contains("library") || lowerName.contains("libraries")) {
+            return "Library";
+        }
+
+        // Engineering & Technology
+        if (lowerName.contains("bahen") || lowerName.contains("sandford fleming") ||
+            lowerName.contains("wallberg") || lowerName.contains("galbraith") ||
+            lowerName.contains("haultain") || lowerName.contains("lassonde") ||
+            lowerName.contains("schwartz reisman")) {
+            return "Engineering & Technology";
+        }
+
+        // Health Sciences
+        if (lowerName.contains("pharmacy") || lowerName.contains("dentistry") ||
+            lowerName.contains("health sciences")) {
+            return "Health Sciences";
+        }
+
+        // Science Labs & Research
+        if (lowerName.contains("medical sciences") || lowerName.contains("mclennan") ||
+            lowerName.contains("bancroft") || lowerName.contains("clara benson")) {
+            return "Science & Research";
+        }
+
+        // Business & Management
+        if (lowerName.contains("rotman")) {
+            return "Business & Management";
+        }
+
+        // Architecture & Design
+        if (lowerName.contains("daniels")) {
+            return "Architecture & Design";
+        }
+
+        // Student Services & Commons
+        if (lowerName.contains("student commons") || lowerName.contains("koffler house")) {
+            return "Student Services";
+        }
+
+        // Historic & Cultural
+        if (lowerName.contains("convocation hall") || lowerName.contains("hart house") ||
+            lowerName.contains("front campus")) {
+            return "Historic & Cultural";
+        }
+
+        // Academic Buildings (general)
+        if (lowerName.contains("hall") || lowerName.contains("building") ||
+            lowerName.contains("centre") || lowerName.contains("center") ||
+            lowerName.contains("institute") || lowerName.contains("college")) {
+            return "Academic Building";
+        }
+
+        // Default
+        return "Campus Location";
     }
 }

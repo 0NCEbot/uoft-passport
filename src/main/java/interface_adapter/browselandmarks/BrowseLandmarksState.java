@@ -11,6 +11,8 @@ public class BrowseLandmarksState {
         public String name;
         public double latitude;
         public double longitude;
+        public String type;
+        public int visitCount;
     }
 
     private List<LandmarkVM> landmarks = new ArrayList<>();
