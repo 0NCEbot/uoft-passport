@@ -1,8 +1,8 @@
 package data_access;
 
 import entity.Note;
-import use_case.edit_note.EditNoteDataAccessInterface;
-import use_case.delete_note.DeleteNoteDataAccessInterface;
+import use_case.editnote.EditNoteDataAccessInterface;
+import use_case.deletenote.DeleteNoteDataAccessInterface;
 
 import java.util.List;
 

@@ -1,4 +1,5 @@
 package use_case.editnote;
 
-public class EditNoteInputBoundary {
+public interface EditNoteInputBoundary {
+    void execute(EditNoteInputData inputData);
 }

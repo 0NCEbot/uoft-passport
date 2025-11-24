@@ -1,4 +1,3 @@
-// src/java/interface_adapter/addnotes/AddNotesPresenter.java
 package interface_adapter.addnotes;
 
 import interface_adapter.ViewManagerModel;
@@ -41,9 +40,11 @@ public class AddNotesPresenter implements AddNotesOutputBoundary {
         // Map NoteDTO -> NoteVM with normalized date format
         List<AddNotesState.NoteVM> vms = new ArrayList<>();
         for (AddNotesOutputData.NoteDTO dto : data.getNotes()) {
-            AddNotesState.NoteVM vm = new AddNotesState.NoteVM();
-            vm.content = dto.content;
-            vm.createdAt = normalizeCreatedAt(dto.createdAt);
+            AddNotesState.NoteVM vm = new AddNotesState.NoteVM(
+                    dto.noteId,                          // ADD THIS
+                    normalizeCreatedAt(dto.createdAt),
+                    dto.content
+            );
             vms.add(vm);
         }
         state.setNotes(vms);

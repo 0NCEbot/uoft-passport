@@ -1,4 +1,6 @@
 package use_case.editnote;
 
-public class EditNoteOutputBoundary {
+public interface EditNoteOutputBoundary {
+    void prepareSuccessView(EditNoteOutputData outputData);
+    void prepareFailView(String error);
 }

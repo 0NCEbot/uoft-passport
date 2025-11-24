@@ -11,8 +11,8 @@ import java.nio.file.Files;
 import java.time.Instant;
 import java.util.*;
 
-import use_case.edit_note.EditNoteDataAccessInterface;
-import use_case.delete_note.DeleteNoteDataAccessInterface;
+import use_case.editnote.EditNoteDataAccessInterface;
+import use_case.deletenote.DeleteNoteDataAccessInterface;
 
 public class JsonUserDataAccessObject implements
         UserDataAccessInterface,

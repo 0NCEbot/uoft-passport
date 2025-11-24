@@ -1,3 +1,5 @@
+package interface_adapter.deletenote;
+
 public class DeleteNoteState {
     private String noteId = "";
     private String landmarkName = "";

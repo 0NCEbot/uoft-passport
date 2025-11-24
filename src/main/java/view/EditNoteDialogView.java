@@ -1,8 +1,8 @@
 package view;
 
-import interface_adapter.editnote.EditNoteController;     // NO underscore
-import interface_adapter.editnote.EditNoteViewModel;      // NO underscore
-import interface_adapter.editnote.EditNoteState;          // NO underscore
+import interface_adapter.editnote.EditNoteController;
+import interface_adapter.editnote.EditNoteViewModel;
+import interface_adapter.editnote.EditNoteState;
 
 import javax.swing.*;
 import java.awt.*;
@@ -21,7 +21,7 @@ public class EditNoteDialogView extends JDialog implements PropertyChangeListene
 
     private static final int MAX_CHARS = 500;
 
-    public EditNoteDialog(Frame parent,
+    public EditNoteDialogView(Frame parent,
                           EditNoteViewModel viewModel,
                           EditNoteController controller,
                           String noteId,

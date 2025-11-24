@@ -1,8 +1,8 @@
-package use_case.deletenote;
+package use_case.editnote;
 
 import entity.Note;
 
-public interface DeleteNoteDataAccessInterface {
+public interface EditNoteDataAccessInterface {
     /**
      * Gets a note by its ID
      * @param noteId the note's unique identifier
@@ -11,10 +11,10 @@ public interface DeleteNoteDataAccessInterface {
     Note getNoteById(String noteId);
 
     /**
-     * Deletes a note
-     * @param noteId the note's unique identifier
+     * Updates a note (replaces the old note with the new one)
+     * @param note the updated Note object
      */
-    void deleteNote(String noteId);
+    void updateNote(Note note);
 
     /**
      * Checks if a note exists

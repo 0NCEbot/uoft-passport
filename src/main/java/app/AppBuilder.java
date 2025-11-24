@@ -172,7 +172,14 @@ public class AppBuilder {
 
     public AppBuilder addNotesView() {
         notesViewModel = new AddNotesViewModel();
-        notesView = new AddNotesView(notesViewModel, viewManagerModel);
+        notesView = new AddNotesView(
+                notesViewModel,
+                viewManagerModel,
+                editNoteViewModel,      // ADD
+                editNoteController,     // ADD
+                deleteNoteViewModel,    // ADD
+                deleteNoteController    // ADD
+        );
         cardPanel.add(notesView, notesView.getViewName());
         return this;
     }
@@ -362,42 +369,45 @@ public class AppBuilder {
         return this;
     }
 
-    // ==================== EDIT & DELETE NOTES SETUP ====================
+    private EditNoteViewModel editNoteViewModel;
+    private DeleteNoteViewModel deleteNoteViewModel;
+    private EditNoteController editNoteController;
+    private DeleteNoteController deleteNoteController;
 
-    // 1. Create ViewModels
-    EditNoteViewModel editNoteViewModel = new EditNoteViewModel();
-    DeleteNoteViewModel deleteNoteViewModel = new DeleteNoteViewModel();
+    // Then add this method to initialize them BEFORE addNotesView() is called:
+    public AppBuilder addEditDeleteNotesSetup() {
+        // 1. Create ViewModels
+        editNoteViewModel = new EditNoteViewModel();
+        deleteNoteViewModel = new DeleteNoteViewModel();
 
-    // 2. Create Presenters
-    EditNotePresenter editNotePresenter = new EditNotePresenter(
-            editNoteViewModel,
-            viewManagerModel
-    );
+        // 2. Create Presenters
+        EditNotePresenter editNotePresenter = new EditNotePresenter(
+                editNoteViewModel,
+                viewManagerModel
+        );
 
-    DeleteNotePresenter deleteNotePresenter = new DeleteNotePresenter(
-            deleteNoteViewModel,
-            viewManagerModel
-    );
+        DeleteNotePresenter deleteNotePresenter = new DeleteNotePresenter(
+                deleteNoteViewModel,
+                viewManagerModel
+        );
 
-    // 3. Create Interactors (using your existing userDataAccessObject)
-    EditNoteInteractor editNoteInteractor = new EditNoteInteractor(
-            userDataAccessObject,  // Your JsonUserDataAccessObject
-            editNotePresenter
-    );
+        // 3. Create Interactors (cast to the interface types)
+        EditNoteInteractor editNoteInteractor = new EditNoteInteractor(
+                (EditNoteDataAccessInterface) userDataAccessObject,
+                editNotePresenter
+        );
 
-    DeleteNoteInteractor deleteNoteInteractor = new DeleteNoteInteractor(
-            userDataAccessObject,  // Your JsonUserDataAccessObject
-            deleteNotePresenter
-    );
+        DeleteNoteInteractor deleteNoteInteractor = new DeleteNoteInteractor(
+                (DeleteNoteDataAccessInterface) userDataAccessObject,
+                deleteNotePresenter
+        );
 
-    // 4. Create Controllers
-    EditNoteController editNoteController = new EditNoteController(editNoteInteractor);
-    DeleteNoteController deleteNoteController = new DeleteNoteController(deleteNoteInteractor);
+        // 4. Create Controllers
+        editNoteController = new EditNoteController(editNoteInteractor);
+        deleteNoteController = new DeleteNoteController(deleteNoteInteractor);
 
-    // 5. Pass controllers to wherever you display notes
-
-
-    // === BUILD ===
+        return this;
+    }
 
     public JFrame build() {
         JFrame app = new JFrame("UofT Passport");

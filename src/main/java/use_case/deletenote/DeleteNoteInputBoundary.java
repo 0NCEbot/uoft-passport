@@ -1,4 +1,5 @@
 package use_case.deletenote;
 
-public class DeleteNoteInputBoundary {
+public interface DeleteNoteInputBoundary {
+    void execute(DeleteNoteInputData inputData);
 }

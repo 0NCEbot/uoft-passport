@@ -1,4 +1,6 @@
 package use_case.deletenote;
 
-public class DeleteNoteOutputBoundary {
+public interface DeleteNoteOutputBoundary {
+    void prepareSuccessView(DeleteNoteOutputData outputData);
+    void prepareFailView(String error);
 }

@@ -355,7 +355,7 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
 
     // NEW METHOD: Handle edit
     private void handleEditNote(String noteId, String currentContent) {
-        EditNoteDialog dialog = new EditNoteDialog(
+        EditNoteDialogView dialog = new EditNoteDialogView(
                 (Frame) SwingUtilities.getWindowAncestor(this),
                 editNoteViewModel,
                 editNoteController,

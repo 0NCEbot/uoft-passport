@@ -21,7 +21,7 @@ public class AddNotesState {
 
     // UPDATED: Added noteId to NoteVM
     public static class NoteVM {
-        public String noteId;      // ADD THIS - needed for edit/delete
+        public String noteId;      // added this - needed for edit/delete
         public String content;
         public String createdAt;
 
