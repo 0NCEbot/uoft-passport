@@ -104,11 +104,13 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
         signUpButton.setPreferredSize(buttonSize);
         loginButton.setPreferredSize(buttonSize);
 
+        signUpButton.setOpaque(true);
         signUpButton.setBackground(new Color(230, 240, 255)); // light blue
         signUpButton.setForeground(new Color(20, 60, 160));   // deep blue
         signUpButton.setFocusPainted(false);
         signUpButton.setBorder(BorderFactory.createLineBorder(new Color(20, 60, 160), 2));
 
+        loginButton.setOpaque(true);
         loginButton.setBackground(Color.WHITE);
         loginButton.setForeground(new Color(20, 60, 160));
         loginButton.setFocusPainted(false);
