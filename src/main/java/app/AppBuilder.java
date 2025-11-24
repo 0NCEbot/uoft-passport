@@ -374,13 +374,12 @@ public class AppBuilder {
     private EditNoteController editNoteController;
     private DeleteNoteController deleteNoteController;
 
-    // Then add this method to initialize them BEFORE addNotesView() is called:
     public AppBuilder addEditDeleteNotesSetup() {
-        // 1. Create ViewModels
+        // Create ViewModels
         editNoteViewModel = new EditNoteViewModel();
         deleteNoteViewModel = new DeleteNoteViewModel();
 
-        // 2. Create Presenters
+        // Create Presenters
         EditNotePresenter editNotePresenter = new EditNotePresenter(
                 editNoteViewModel,
                 viewManagerModel
@@ -391,7 +390,7 @@ public class AppBuilder {
                 viewManagerModel
         );
 
-        // 3. Create Interactors (cast to the interface types)
+        // Create Interactors (cast to the interface types)
         EditNoteInteractor editNoteInteractor = new EditNoteInteractor(
                 (EditNoteDataAccessInterface) userDataAccessObject,
                 editNotePresenter
@@ -402,7 +401,7 @@ public class AppBuilder {
                 deleteNotePresenter
         );
 
-        // 4. Create Controllers
+        // Create Controllers
         editNoteController = new EditNoteController(editNoteInteractor);
         deleteNoteController = new DeleteNoteController(deleteNoteInteractor);
 
