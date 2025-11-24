@@ -369,6 +369,8 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
         // Reload notes after edit
         if (controller != null) {
             controller.reloadNotes();
+            // Clear the error message
+            messageLabel.setText("");
         }
     }
 
@@ -388,6 +390,8 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
             // Reload notes after delete
             if (controller != null) {
                 controller.reloadNotes();
+                // Clear the error message
+                messageLabel.setText("");
             }
         }
     }
