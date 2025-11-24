@@ -2,9 +2,6 @@ package interface_adapter;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 
 /**
  * The ViewModel for our CA implementation.
@@ -20,33 +17,6 @@ public class ViewModel<T> {
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
     private T state;
-
-    // ===== GLOBAL EVENT BUS (static, shared across all ViewModels) =====
-    private static final Map<String, List<Consumer<Object>>> globalListeners = new ConcurrentHashMap<>();
-
-    public static void subscribe(String eventName, Consumer<Object> listener) {
-        globalListeners.computeIfAbsent(eventName, k -> new ArrayList<>()).add(listener);
-    }
-
-    public static void publish(String eventName, Object payload) {
-        List<Consumer<Object>> listeners = globalListeners.get(eventName);
-        if (listeners != null) {
-            for (Consumer<Object> listener : listeners) {
-                listener.accept(payload);
-            }
-        }
-    }
-
-    public static void publish(String eventName) {
-        publish(eventName, null);
-    }
-
-    public static void unsubscribe(String eventName, Consumer<Object> listener) {
-        List<Consumer<Object>> eventListeners = globalListeners.get(eventName);
-        if (eventListeners != null) {
-            eventListeners.remove(listener);
-        }
-    }
 
     public ViewModel(String viewName) {
         this.viewName = viewName;

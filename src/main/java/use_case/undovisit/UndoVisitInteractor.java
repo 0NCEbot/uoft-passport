@@ -2,6 +2,7 @@ package use_case.undovisit;
 
 import entity.User;
 import entity.Visit;
+import interface_adapter.EventBus;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -67,6 +68,9 @@ public class UndoVisitInteractor implements UndoVisitInputBoundary {
 
         // Save the updated user data
         userDataAccess.save(user);
+
+        // Publish global event for other views to react
+        EventBus.publish("visitModified", username);
 
         // Convert remaining visits to DTOs for display
         List<UndoVisitOutputData.VisitDTO> visitDTOs = new ArrayList<>();

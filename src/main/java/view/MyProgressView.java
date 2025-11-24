@@ -1,7 +1,7 @@
 package view;
 
+import interface_adapter.EventBus;
 import interface_adapter.ViewManagerModel;
-import interface_adapter.ViewModel;
 import interface_adapter.myprogress.MyProgressController;
 import interface_adapter.myprogress.MyProgressState;
 import interface_adapter.myprogress.MyProgressViewModel;
@@ -38,23 +38,24 @@ public class MyProgressView extends JPanel implements PropertyChangeListener {
         this.viewManagerModel = viewManagerModel;
 
         // Subscribe to global event
-        ViewModel.subscribe("visitRecorded", payload -> {
+        EventBus.subscribe("visitModified", payload -> {
             String username = (String) payload;
             String currentUser = viewModel.getState().getUsername();
 
             if (currentUser != null && currentUser.equals(username) && controller != null) {
-                System.out.println("[MyProgressView] Visit recorded, refreshing...");
+                System.out.println("[MyProgressView] Visit modified, refreshing...");
                 controller.execute(currentUser);
             }
         });
 
         // Initialize when user logs in
-        ViewModel.subscribe("userLoggedIn", payload -> {
+        EventBus.subscribe("userLoggedIn", payload -> {
             String username = (String) payload;
             MyProgressState state = viewModel.getState();
             state.setUsername(username);
             viewModel.setState(state);
             if (controller != null) {
+                System.out.println("[MyProgressView] Login detected, preparing view...");
                 controller.execute(username);
             }
         });
@@ -122,14 +123,14 @@ public class MyProgressView extends JPanel implements PropertyChangeListener {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         buttonPanel.setBackground(Color.WHITE);
 
-        JButton visitHistoryButton = new JButton("Visit History");
+        JButton visitHistoryButton = new JButton("View Visit History");
         visitHistoryButton.setFont(new Font("Arial", Font.BOLD, 14));
         visitHistoryButton.setForeground(Color.WHITE);
         visitHistoryButton.setBackground(new Color(0, 102, 204));
         visitHistoryButton.setFocusPainted(false);
         visitHistoryButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         visitHistoryButton.addActionListener(e -> {
-            viewManagerModel.setState("visit history");
+            viewManagerModel.setState("view history");
             viewManagerModel.firePropertyChange();
         });
 

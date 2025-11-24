@@ -1,5 +1,6 @@
 package view;
 
+import interface_adapter.EventBus;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.viewhistory.ViewHistoryController;
 import interface_adapter.viewhistory.ViewHistoryState;
@@ -51,6 +52,29 @@ public class ViewHistoryView extends JPanel implements PropertyChangeListener {
         this.viewManagerModel = viewManagerModel;
 
         this.viewModel.addPropertyChangeListener(this);
+
+        // Subscribe to global event
+        EventBus.subscribe("visitModified", payload -> {
+            String username = (String) payload;
+            String currentUser = viewModel.getState().getUsername();
+
+            if (currentUser != null && currentUser.equals(username) && controller != null) {
+                System.out.println("[ViewHistoryView] Visit modified, refreshing...");
+                controller.execute(currentUser);
+            }
+        });
+
+        // Initialize when user logs in
+        EventBus.subscribe("userLoggedIn", payload -> {
+            String username = (String) payload;
+            ViewHistoryState state = viewModel.getState();
+            state.setUsername(username);
+            viewModel.setState(state);
+            if (controller != null) {
+                System.out.println("[ViewHistoryView] Login detected, preparing view...");
+                controller.execute(username);
+            }
+        });
 
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
