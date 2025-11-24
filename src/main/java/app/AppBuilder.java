@@ -73,6 +73,13 @@ import use_case.undovisit.UndoVisitInputBoundary;
 import use_case.undovisit.UndoVisitInteractor;
 import use_case.undovisit.UndoVisitOutputBoundary;
 
+// imports for Edit & Delete Notes use cases
+import interface_adapter.editnote.*;
+import interface_adapter.deletenote.*;
+import use_case.editnote.*;
+import use_case.deletenote.*;
+
+
 import view.*;
 // NEW Notes view
 
@@ -165,7 +172,14 @@ public class AppBuilder {
 
     public AppBuilder addNotesView() {
         notesViewModel = new AddNotesViewModel();
-        notesView = new AddNotesView(notesViewModel, viewManagerModel);
+        notesView = new AddNotesView(
+                notesViewModel,
+                viewManagerModel,
+                editNoteViewModel,      // ADD
+                editNoteController,     // ADD
+                deleteNoteViewModel,    // ADD
+                deleteNoteController    // ADD
+        );
         cardPanel.add(notesView, notesView.getViewName());
         return this;
     }
@@ -355,7 +369,44 @@ public class AppBuilder {
         return this;
     }
 
-    // === BUILD ===
+    private EditNoteViewModel editNoteViewModel;
+    private DeleteNoteViewModel deleteNoteViewModel;
+    private EditNoteController editNoteController;
+    private DeleteNoteController deleteNoteController;
+
+    public AppBuilder addEditDeleteNotesSetup() {
+        // Create ViewModels
+        editNoteViewModel = new EditNoteViewModel();
+        deleteNoteViewModel = new DeleteNoteViewModel();
+
+        // Create Presenters
+        EditNotePresenter editNotePresenter = new EditNotePresenter(
+                editNoteViewModel,
+                viewManagerModel
+        );
+
+        DeleteNotePresenter deleteNotePresenter = new DeleteNotePresenter(
+                deleteNoteViewModel,
+                viewManagerModel
+        );
+
+        // Create Interactors (cast to the interface types)
+        EditNoteInteractor editNoteInteractor = new EditNoteInteractor(
+                (EditNoteDataAccessInterface) userDataAccessObject,
+                editNotePresenter
+        );
+
+        DeleteNoteInteractor deleteNoteInteractor = new DeleteNoteInteractor(
+                (DeleteNoteDataAccessInterface) userDataAccessObject,
+                deleteNotePresenter
+        );
+
+        // Create Controllers
+        editNoteController = new EditNoteController(editNoteInteractor);
+        deleteNoteController = new DeleteNoteController(deleteNoteInteractor);
+
+        return this;
+    }
 
     public JFrame build() {
         JFrame app = new JFrame("UofT Passport");

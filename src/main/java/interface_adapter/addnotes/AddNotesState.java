@@ -1,4 +1,3 @@
-// src/java/interface_adapter/addnotes/AddNotesState.java
 package interface_adapter.addnotes;
 
 import java.util.ArrayList;
@@ -20,9 +19,21 @@ public class AddNotesState {
     private String errorMessage = null;
     private String successMessage = null;
 
+    // UPDATED: Added noteId to NoteVM
     public static class NoteVM {
+        public String noteId;      // added this - needed for edit/delete
         public String content;
         public String createdAt;
+
+        // ADD THIS constructor
+        public NoteVM(String noteId, String createdAt, String content) {
+            this.noteId = noteId;
+            this.createdAt = createdAt;
+            this.content = content;
+        }
+
+        // Keep default constructor for compatibility
+        public NoteVM() {}
     }
 
     private List<NoteVM> notes = new ArrayList<>();

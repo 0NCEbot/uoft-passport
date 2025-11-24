@@ -75,10 +75,12 @@ public class SelectedPlacePresenter implements SelectedPlaceOutputBoundary {
                         n.getLandmark().getLandmarkName()
                                 .equalsIgnoreCase(data.getLandmarkName())) {
 
-                    AddNotesState.NoteVM vm = new AddNotesState.NoteVM();
-                    vm.content = n.getContent();
-                    vm.createdAt = normalizeCreatedAt(
-                            n.getCreatedAt() != null ? n.getCreatedAt().toString() : ""
+                    AddNotesState.NoteVM vm = new AddNotesState.NoteVM(
+                            n.getNoteId(),                                              // ADD noteId
+                            normalizeCreatedAt(
+                                    n.getCreatedAt() != null ? n.getCreatedAt().toString() : ""
+                            ),
+                            n.getContent()
                     );
                     notesVM.add(vm);
                 }

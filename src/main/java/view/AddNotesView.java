@@ -1,10 +1,14 @@
-// src/java/view/AddNotesView.java
 package view;
 
 import interface_adapter.ViewManagerModel;
 import interface_adapter.addnotes.AddNotesController;
 import interface_adapter.addnotes.AddNotesState;
 import interface_adapter.addnotes.AddNotesViewModel;
+// ADD THESE IMPORTS (note: no underscore):
+import interface_adapter.editnote.EditNoteController;
+import interface_adapter.editnote.EditNoteViewModel;
+import interface_adapter.deletenote.DeleteNoteController;
+import interface_adapter.deletenote.DeleteNoteViewModel;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -27,6 +31,12 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
 
     private AddNotesController controller;
 
+    // ADD THESE FIELDS:
+    private EditNoteController editNoteController;
+    private EditNoteViewModel editNoteViewModel;
+    private DeleteNoteController deleteNoteController;
+    private DeleteNoteViewModel deleteNoteViewModel;
+
     private JLabel usernameLabel;
     private JLabel landmarkNameLabel;
     private JTextArea descriptionArea;      // left-side input
@@ -36,9 +46,8 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
     private JLabel imageLabel;
     private JLabel messageLabel;
 
-    // NEW: scrollable notes list
-    private DefaultListModel<String> notesListModel;
-    private JList<String> notesList;
+    // CHANGED: Replace JList with JPanel
+    private JPanel notesDisplayPanel;  // CHANGED from DefaultListModel and JList
     private JLabel noNotesLabel;
 
     // ====== GOOGLE PLACES CONFIG (same as SelectedPlaceView) ======
@@ -48,10 +57,19 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
     private final OkHttpClient httpClient = new OkHttpClient();
     private SwingWorker<ImageIcon, Void> currentPhotoWorker;
 
+    // UPDATED CONSTRUCTOR - Add the edit/delete controllers
     public AddNotesView(AddNotesViewModel viewModel,
-                        ViewManagerModel viewManagerModel) {
+                        ViewManagerModel viewManagerModel,
+                        EditNoteViewModel editNoteViewModel,
+                        EditNoteController editNoteController,
+                        DeleteNoteViewModel deleteNoteViewModel,
+                        DeleteNoteController deleteNoteController) {
         this.viewModel = viewModel;
         this.viewManagerModel = viewManagerModel;
+        this.editNoteViewModel = editNoteViewModel;
+        this.editNoteController = editNoteController;
+        this.deleteNoteViewModel = deleteNoteViewModel;
+        this.deleteNoteController = deleteNoteController;
 
         this.viewModel.addPropertyChangeListener(this);
 
@@ -90,7 +108,6 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
         backButton.setContentAreaFilled(false);
         backButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         backButton.addActionListener(e -> {
-            // 1) Reset state so there is no leftover message
             AddNotesState current = viewModel.getState();
             AddNotesState cleared = new AddNotesState();
 
@@ -102,27 +119,25 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
             cleared.setContent("");
             cleared.setErrorMessage(null);
             cleared.setSuccessMessage(null);
-            cleared.setNotes(current.getNotes());  // keep notes list
+            cleared.setNotes(current.getNotes());
 
             viewModel.setState(cleared);
             viewModel.firePropertyChange();
 
-            // 2) Also clear the UI widgets immediately
             descriptionArea.setText("");
             messageLabel.setText("");
 
-            // 3) Navigate back to SelectedPlace
             viewManagerModel.setState("selected place");
             viewManagerModel.firePropertyChange();
         });
 
         bottomBar.add(backButton);
 
-        // ===== CENTER LAYOUT (left: form + notes, right: landmark card) =====
+        // ===== CENTER LAYOUT =====
         JPanel centerPanel = new JPanel(new GridLayout(1, 2));
         centerPanel.setBackground(Color.WHITE);
 
-        // -------- LEFT SIDE: notes list + description + Add button --------
+        // -------- LEFT SIDE --------
         JPanel leftPanel = new JPanel();
         leftPanel.setBackground(Color.WHITE);
         leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
@@ -137,13 +152,15 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
         noNotesLabel.setForeground(Color.GRAY);
         noNotesLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // list + scroll
-        notesListModel = new DefaultListModel<>();
-        notesList = new JList<>(notesListModel);
-        notesList.setVisibleRowCount(6);
-        JScrollPane notesScroll = new JScrollPane(notesList);
+        // CHANGED: Create panel instead of JList
+        notesDisplayPanel = new JPanel();
+        notesDisplayPanel.setLayout(new BoxLayout(notesDisplayPanel, BoxLayout.Y_AXIS));
+        notesDisplayPanel.setBackground(Color.WHITE);
+
+        JScrollPane notesScroll = new JScrollPane(notesDisplayPanel);
         notesScroll.setAlignmentX(Component.LEFT_ALIGNMENT);
-        notesScroll.setPreferredSize(new Dimension(300, 150));
+        notesScroll.setPreferredSize(new Dimension(500, 150));
+        notesScroll.getVerticalScrollBar().setUnitIncrement(16);
 
         // typing area
         descriptionArea = new JTextArea(5, 21);
@@ -180,18 +197,15 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
         leftPanel.add(Box.createVerticalStrut(10));
         leftPanel.add(messageLabel);
 
-        // -------- RIGHT SIDE: copied layout from SelectedPlaceView --------
+        // -------- RIGHT SIDE --------
         JPanel rightPanel = new JPanel();
         rightPanel.setBackground(Color.WHITE);
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-        // same padding as SelectedPlaceView
         rightPanel.setBorder(BorderFactory.createEmptyBorder(40, 0, 40, 40));
 
         imageLabel = new JLabel();
-        // same preferred size as SelectedPlaceView
         imageLabel.setPreferredSize(new Dimension(350, 220));
         imageLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        // start with placeholder
         setPlaceholderImage();
 
         landmarkNameLabel = new JLabel("Landmark Name");
@@ -224,15 +238,13 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
         rightPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         rightPanel.add(hoursLabel);
 
-        // attach panels
         centerPanel.add(leftPanel);
         JScrollPane scroll = new JScrollPane(
                 rightPanel,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
         );
-        scroll.getVerticalScrollBar().setUnitIncrement(16); // smoother scrolling
-        // same border style as SelectedPlaceView
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
         scroll.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 20));
 
         centerPanel.add(scroll);
@@ -261,7 +273,6 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
         descriptionRight.setText(state.getLandmarkDescription());
         addressLabel.setText(state.getAddress());
 
-        // ---- format hours on multiple lines ----
         String openHours = state.getOpenHours();
         if (openHours == null || openHours.isBlank() || "No hours available".equals(openHours)) {
             hoursLabel.setText("Hours: No hours available");
@@ -271,17 +282,20 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
             hoursLabel.setText(htmlHours);
         }
 
-        // ===== UPDATE NOTES LIST (ONLY THIS USER’S NOTES) =====
-        notesListModel.clear();
-        if (state.getNotes() != null) {
+        // CHANGED: Update notes display with Edit/Delete buttons
+        notesDisplayPanel.removeAll();
+        if (state.getNotes() != null && !state.getNotes().isEmpty()) {
             for (AddNotesState.NoteVM n : state.getNotes()) {
-                String line = n.createdAt + " - " + n.content;
-                notesListModel.addElement(line);
+                JPanel notePanel = createNotePanel(n);
+                notesDisplayPanel.add(notePanel);
             }
+            noNotesLabel.setVisible(false);
+        } else {
+            noNotesLabel.setVisible(true);
         }
-        noNotesLabel.setVisible(notesListModel.isEmpty());
+        notesDisplayPanel.revalidate();
+        notesDisplayPanel.repaint();
 
-        // feedback messages
         if (state.getErrorMessage() != null) {
             messageLabel.setForeground(Color.RED);
             messageLabel.setText(state.getErrorMessage());
@@ -293,11 +307,96 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
             messageLabel.setText("");
         }
 
-        // load photo
         loadPhotoForLandmarkAsync(state.getLandmarkName());
     }
 
-    /* ================== PHOTO LOADING (same as SelectedPlaceView) ================== */
+    // NEW METHOD: Create note panel with Edit/Delete buttons
+    private JPanel createNotePanel(AddNotesState.NoteVM noteVM) {
+        System.out.println("DEBUG Display: noteId='" + noteVM.noteId + "' createdAt='" + noteVM.createdAt + "' content='" + noteVM.content + "'");
+        JPanel notePanel = new JPanel(new BorderLayout(10, 5));
+        notePanel.setBackground(Color.WHITE);
+        notePanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY),
+                BorderFactory.createEmptyBorder(8, 5, 8, 5)
+        ));
+        notePanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
+
+        // Note text
+        JLabel noteLabel = new JLabel(noteVM.createdAt + " - " + noteVM.content);
+        noteLabel.setFont(new Font("Arial", Font.PLAIN, 13));
+
+        // Buttons panel
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
+        buttonPanel.setOpaque(false);
+
+        JButton editButton = new JButton("Edit");
+        editButton.setFont(new Font("Arial", Font.PLAIN, 11));
+        editButton.setForeground(new Color(0, 102, 204));
+        editButton.setBorderPainted(true);
+        editButton.setContentAreaFilled(false);
+        editButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        editButton.addActionListener(e -> handleEditNote(noteVM.noteId, noteVM.content));
+
+        JButton deleteButton = new JButton("Delete");
+        deleteButton.setFont(new Font("Arial", Font.PLAIN, 11));
+        deleteButton.setForeground(new Color(220, 53, 69));
+        deleteButton.setBorderPainted(true);
+        deleteButton.setContentAreaFilled(false);
+        deleteButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        deleteButton.addActionListener(e -> handleDeleteNote(noteVM.noteId));
+
+        buttonPanel.add(editButton);
+        buttonPanel.add(deleteButton);
+
+        notePanel.add(noteLabel, BorderLayout.CENTER);
+        notePanel.add(buttonPanel, BorderLayout.EAST);
+
+        return notePanel;
+    }
+
+    // NEW METHOD: Handle edit
+    private void handleEditNote(String noteId, String currentContent) {
+        EditNoteDialogView dialog = new EditNoteDialogView(
+                (Frame) SwingUtilities.getWindowAncestor(this),
+                editNoteViewModel,
+                editNoteController,
+                noteId,
+                currentContent,
+                viewModel.getState().getLandmarkName()
+        );
+        dialog.setVisible(true);
+
+        // Reload notes after edit
+        if (controller != null) {
+            controller.reloadNotes();
+            // Clear the error message
+            messageLabel.setText("");
+        }
+    }
+
+    // NEW METHOD: Handle delete
+    private void handleDeleteNote(String noteId) {
+        int result = JOptionPane.showConfirmDialog(
+                this,
+                "Are you sure you want to delete this note?",
+                "Confirm Delete",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+        );
+
+        if (result == JOptionPane.YES_OPTION) {
+            deleteNoteController.execute(noteId);
+
+            // Reload notes after delete
+            if (controller != null) {
+                controller.reloadNotes();
+                // Clear the error message
+                messageLabel.setText("");
+            }
+        }
+    }
+
+    /* ================== PHOTO LOADING ================== */
 
     private void setPlaceholderImage() {
         ImageIcon img = new ImageIcon("src/main/resources/placeholder_landmark.jpg");

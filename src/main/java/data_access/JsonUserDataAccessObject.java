@@ -11,7 +11,13 @@ import java.nio.file.Files;
 import java.time.Instant;
 import java.util.*;
 
-public class JsonUserDataAccessObject implements UserDataAccessInterface {
+import use_case.editnote.EditNoteDataAccessInterface;
+import use_case.deletenote.DeleteNoteDataAccessInterface;
+
+public class JsonUserDataAccessObject implements
+        UserDataAccessInterface,
+        EditNoteDataAccessInterface,
+        DeleteNoteDataAccessInterface {
 
     private final File jsonFile;
     private final Map<String, User> accounts = new HashMap<>();
@@ -246,5 +252,91 @@ public class JsonUserDataAccessObject implements UserDataAccessInterface {
     @Override
     public boolean existsByName(String identifier) {
         return accounts.containsKey(identifier);
+    }
+
+    // ==================== EDIT NOTE METHODS ====================
+
+    @Override
+    public Note getNoteById(String noteId) {
+        // Search through all users to find the note
+        for (User user : accounts.values()) {
+            for (Note note : user.getPrivateNotes()) {
+                if (note.getNoteId().equals(noteId)) {
+                    return note;
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void updateNote(Note updatedNote) {
+        // Find the user who owns this note and update it
+        for (User user : accounts.values()) {
+            List<Note> notes = user.getPrivateNotes();
+
+            for (int i = 0; i < notes.size(); i++) {
+                if (notes.get(i).getNoteId().equals(updatedNote.getNoteId())) {
+                    // Replace the old note with the updated one
+                    notes.set(i, updatedNote);
+
+                    // Save the user (which triggers saveAll())
+                    save(user);
+                    return;
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean noteExists(String noteId) {
+        return getNoteById(noteId) != null;
+    }
+
+// ==================== DELETE NOTE METHODS ====================
+
+    @Override
+    public void deleteNote(String noteId) {
+        // Find the user who owns this note and delete it
+        for (User user : accounts.values()) {
+            List<Note> notes = user.getPrivateNotes();
+
+            // Find and remove the note
+            boolean removed = notes.removeIf(note -> note.getNoteId().equals(noteId));
+
+            if (removed) {
+                // Save the user (which triggers saveAll())
+                save(user);
+                return;
+            }
+        }
+    }
+
+
+    /**
+     * Get all notes for a specific user
+     */
+    public List<Note> getNotesForUser(String username) {
+        User user = accounts.get(username);
+        if (user != null) {
+            return new ArrayList<>(user.getPrivateNotes());
+        }
+        return new ArrayList<>();
+    }
+
+    /**
+     * Get all notes for a specific landmark across all users
+     * (Useful if you want to show all notes at a landmark)
+     */
+    public List<Note> getNotesForLandmark(String landmarkName) {
+        List<Note> result = new ArrayList<>();
+        for (User user : accounts.values()) {
+            for (Note note : user.getPrivateNotes()) {
+                if (note.getLandmark().getLandmarkName().equals(landmarkName)) {
+                    result.add(note);
+                }
+            }
+        }
+        return result;
     }
 }
