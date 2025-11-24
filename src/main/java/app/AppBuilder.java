@@ -73,6 +73,13 @@ import use_case.undovisit.UndoVisitInputBoundary;
 import use_case.undovisit.UndoVisitInteractor;
 import use_case.undovisit.UndoVisitOutputBoundary;
 
+// imports for Edit & Delete Notes use cases
+import interface_adapter.editnote.*;
+import interface_adapter.deletenote.*;
+import use_case.editnote.*;
+import use_case.deletenote.*;
+
+
 import view.*;
 // NEW Notes view
 
@@ -354,6 +361,41 @@ public class AppBuilder {
         myProgressView.setMyProgressController(controller);
         return this;
     }
+
+    // ==================== EDIT & DELETE NOTES SETUP ====================
+
+    // 1. Create ViewModels
+    EditNoteViewModel editNoteViewModel = new EditNoteViewModel();
+    DeleteNoteViewModel deleteNoteViewModel = new DeleteNoteViewModel();
+
+    // 2. Create Presenters
+    EditNotePresenter editNotePresenter = new EditNotePresenter(
+            editNoteViewModel,
+            viewManagerModel
+    );
+
+    DeleteNotePresenter deleteNotePresenter = new DeleteNotePresenter(
+            deleteNoteViewModel,
+            viewManagerModel
+    );
+
+    // 3. Create Interactors (using your existing userDataAccessObject)
+    EditNoteInteractor editNoteInteractor = new EditNoteInteractor(
+            userDataAccessObject,  // Your JsonUserDataAccessObject
+            editNotePresenter
+    );
+
+    DeleteNoteInteractor deleteNoteInteractor = new DeleteNoteInteractor(
+            userDataAccessObject,  // Your JsonUserDataAccessObject
+            deleteNotePresenter
+    );
+
+    // 4. Create Controllers
+    EditNoteController editNoteController = new EditNoteController(editNoteInteractor);
+    DeleteNoteController deleteNoteController = new DeleteNoteController(deleteNoteInteractor);
+
+    // 5. Pass controllers to wherever you display notes
+
 
     // === BUILD ===
 
