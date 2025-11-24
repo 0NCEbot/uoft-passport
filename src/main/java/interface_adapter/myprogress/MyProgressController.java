@@ -5,14 +5,14 @@ import use_case.myprogress.MyProgressInputData;
 
 public class MyProgressController {
 
-    private final MyProgressInputBoundary myProgressInputBoundary;
+    private final MyProgressInputBoundary interactor;
 
-    public MyProgressController(MyProgressInputBoundary myProgressInputBoundary) {
-        this.myProgressInputBoundary = myProgressInputBoundary;
+    public MyProgressController(MyProgressInputBoundary interactor) {
+        this.interactor = interactor;
     }
 
     public void execute(String username) {
         MyProgressInputData inputData = new MyProgressInputData(username);
-        myProgressInputBoundary.execute(inputData);
+        interactor.execute(inputData);
     }
 }
