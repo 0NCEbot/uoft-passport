@@ -127,6 +127,8 @@ public class MyProgressView extends JPanel implements PropertyChangeListener {
         visitHistoryButton.setFont(new Font("Arial", Font.BOLD, 14));
         visitHistoryButton.setForeground(Color.WHITE);
         visitHistoryButton.setBackground(new Color(0, 102, 204));
+        visitHistoryButton.setOpaque(true);
+        visitHistoryButton.setBorderPainted(false);
         visitHistoryButton.setFocusPainted(false);
         visitHistoryButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         visitHistoryButton.addActionListener(e -> {
