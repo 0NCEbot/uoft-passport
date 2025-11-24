@@ -24,4 +24,15 @@ public class AddNotesController {
         );
         interactor.addNote(inputData);
     }
+
+    // Add this method to reload notes
+    public void reloadNotes() {
+        AddNotesState state = viewModel.getState();
+        AddNotesInputData inputData = new AddNotesInputData(
+                state.getUsername(),
+                state.getLandmarkName(),
+                "" // Empty content just to trigger reload
+        );
+        interactor.addNote(inputData);
+    }
 }

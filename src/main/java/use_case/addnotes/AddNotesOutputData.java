@@ -9,7 +9,7 @@ public class AddNotesOutputData {
         public final String createdAt;
         public final String content;
 
-        public NoteDTO(String createdAt, String content, String noteId) {
+        public NoteDTO(String noteId, String createdAt, String content) {
             this.noteId = noteId;
             this.createdAt = createdAt;
             this.content = content;

@@ -41,9 +41,10 @@ public class AddNotesPresenter implements AddNotesOutputBoundary {
         List<AddNotesState.NoteVM> vms = new ArrayList<>();
         for (AddNotesOutputData.NoteDTO dto : data.getNotes()) {
             AddNotesState.NoteVM vm = new AddNotesState.NoteVM(
-                    dto.noteId,                          // ADD THIS
+                    dto.noteId,
                     normalizeCreatedAt(dto.createdAt),
                     dto.content
+
             );
             vms.add(vm);
         }

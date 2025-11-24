@@ -312,6 +312,7 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
 
     // NEW METHOD: Create note panel with Edit/Delete buttons
     private JPanel createNotePanel(AddNotesState.NoteVM noteVM) {
+        System.out.println("DEBUG Display: noteId='" + noteVM.noteId + "' createdAt='" + noteVM.createdAt + "' content='" + noteVM.content + "'");
         JPanel notePanel = new JPanel(new BorderLayout(10, 5));
         notePanel.setBackground(Color.WHITE);
         notePanel.setBorder(BorderFactory.createCompoundBorder(
@@ -365,8 +366,10 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
         );
         dialog.setVisible(true);
 
-        // Refresh display
-        viewModel.firePropertyChange();
+        // Reload notes after edit
+        if (controller != null) {
+            controller.reloadNotes();
+        }
     }
 
     // NEW METHOD: Handle delete
@@ -381,7 +384,11 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
 
         if (result == JOptionPane.YES_OPTION) {
             deleteNoteController.execute(noteId);
-            viewModel.firePropertyChange();
+
+            // Reload notes after delete
+            if (controller != null) {
+                controller.reloadNotes();
+            }
         }
     }
 
