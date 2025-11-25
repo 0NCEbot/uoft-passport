@@ -11,8 +11,7 @@ public class MyProgressController {
         this.interactor = interactor;
     }
 
-    public void execute(String username) {
-        MyProgressInputData inputData = new MyProgressInputData(username);
-        interactor.execute(inputData);
+    public void execute() {
+        interactor.execute();
     }
 }

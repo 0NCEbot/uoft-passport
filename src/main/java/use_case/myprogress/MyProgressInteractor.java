@@ -26,9 +26,9 @@ public class MyProgressInteractor implements MyProgressInputBoundary {
     }
 
     @Override
-    public void execute(MyProgressInputData inputData) {
+    public void execute() {
         // Fetch user
-        User user = userDAO.get(inputData.getUsername());
+        User user = userDAO.get(userDAO.getCurrentUsername());
         if (user == null) {
             presenter.prepareFailView("User not found");
             return;
@@ -52,16 +52,18 @@ public class MyProgressInteractor implements MyProgressInputBoundary {
         String mostVisitedName = "";
         int mostVisitedCount = 0;
         Map<String, Integer> visitsPerLandmark = findVisitsPerLandmark(visits);
-        for (Map.Entry<String, Integer> entry : visitsPerLandmark.entrySet()) {
-            if (entry.getValue() > mostVisitedCount) {
-                mostVisitedName = entry.getKey();
-                mostVisitedCount = entry.getValue();
+        if (!(visitsPerLandmark.isEmpty())) {
+            for (Map.Entry<String, Integer> entry : visitsPerLandmark.entrySet()) {
+                if (entry.getValue() > mostVisitedCount) {
+                    mostVisitedName = entry.getKey();
+                    mostVisitedCount = entry.getValue();
+                }
             }
         }
 
         // Send to presenter
         MyProgressOutputData outputData = new MyProgressOutputData(
-                inputData.getUsername(),
+                user.getUsername(),
                 uniqueVisited,
                 totalLandmarks,
                 percentage,
@@ -79,6 +81,7 @@ public class MyProgressInteractor implements MyProgressInputBoundary {
     }
 
     private int calculateUniqueVisited(List<Visit> visits) {
+        if (visits.isEmpty()) return 0;
         Set<String> visited = new HashSet<>();
         for (Visit visit : visits) {
             visited.add(visit.getLandmark().getLandmarkName());
@@ -92,6 +95,7 @@ public class MyProgressInteractor implements MyProgressInputBoundary {
     }
 
     private int calculateVisitsInDays(List<Visit> visits, int days) {
+        if (visits.isEmpty()) return 0;
         LocalDate cutoff = LocalDate.now().minusDays(days);
         Instant cutoffInstant = cutoff.atStartOfDay(ZoneId.systemDefault()).toInstant();
 

@@ -1,14 +1,17 @@
 package interface_adapter.myprogress;
 
+import interface_adapter.ViewManagerModel;
 import use_case.myprogress.MyProgressOutputBoundary;
 import use_case.myprogress.MyProgressOutputData;
 
 public class MyProgressPresenter implements MyProgressOutputBoundary {
 
     private final MyProgressViewModel viewModel;
+    private final ViewManagerModel viewManagerModel;
 
-    public MyProgressPresenter(MyProgressViewModel viewModel) {
+    public MyProgressPresenter(MyProgressViewModel viewModel, ViewManagerModel viewManagerModel) {
         this.viewModel = viewModel;
+        this.viewManagerModel = viewManagerModel;
     }
 
     @Override
@@ -31,6 +34,9 @@ public class MyProgressPresenter implements MyProgressOutputBoundary {
 
         viewModel.setState(state);
         viewModel.firePropertyChange();
+
+        viewManagerModel.setState("my progress");
+        viewManagerModel.firePropertyChange();
     }
 
     @Override

@@ -356,7 +356,7 @@ public class AppBuilder {
     }
 
     public AppBuilder addMyProgressUseCase() {
-        MyProgressOutputBoundary presenter = new MyProgressPresenter(myProgressViewModel);
+        MyProgressOutputBoundary presenter = new MyProgressPresenter(myProgressViewModel, viewManagerModel);
 
         MyProgressInputBoundary interactor = new MyProgressInteractor(
                 userDataAccessObject,

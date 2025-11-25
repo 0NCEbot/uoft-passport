@@ -54,25 +54,16 @@ public class ViewHistoryView extends JPanel implements PropertyChangeListener {
         this.viewModel.addPropertyChangeListener(this);
 
         // Subscribe to global event
-        EventBus.subscribe("visitModified", payload -> {
+        EventBus.subscribe("ToViewHistory", payload -> {
+            // let's just make it blindly accept username ig
             String username = (String) payload;
-            String currentUser = viewModel.getState().getUsername();
-
-            if (currentUser != null && currentUser.equals(username) && controller != null) {
-                System.out.println("[ViewHistoryView] Visit modified, refreshing...");
-                controller.execute(currentUser);
+            if (controller == null) {
+                return;
             }
-        });
-
-        // Initialize when user logs in
-        EventBus.subscribe("userLoggedIn", payload -> {
-            String username = (String) payload;
-            ViewHistoryState state = viewModel.getState();
-            state.setUsername(username);
-            viewModel.setState(state);
-            if (controller != null) {
-                System.out.println("[ViewHistoryView] Login detected, preparing view...");
-                controller.execute(username);
+            System.out.println("[ViewHistoryView] Navigated to View History with username " + username);
+            controller.execute(username);
+            if (viewModel.getState().getUsername() == null) {
+                throw new RuntimeException("Username is null");
             }
         });
 
@@ -211,7 +202,7 @@ public class ViewHistoryView extends JPanel implements PropertyChangeListener {
         backButton.setBorderPainted(false);
         backButton.setContentAreaFilled(false);
         backButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        backButton.addActionListener(e -> navigateToHomescreen());
+        backButton.addActionListener(e -> navigateToMyProgress());
 
         bottomBar.add(backButton);
 
@@ -258,7 +249,8 @@ public class ViewHistoryView extends JPanel implements PropertyChangeListener {
     /**
      * Navigates back to the my progress screen.
      */
-    private void navigateToHomescreen() {
+    private void navigateToMyProgress() {
+        EventBus.publish("ToMyProgress", viewModel.getState().getUsername());
         viewManagerModel.setState("my progress");
         viewManagerModel.firePropertyChange();
     }

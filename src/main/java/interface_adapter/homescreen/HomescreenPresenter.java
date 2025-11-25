@@ -1,5 +1,6 @@
 package interface_adapter.homescreen;
 
+import interface_adapter.EventBus;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.browselandmarks.BrowseLandmarksState;
 import interface_adapter.browselandmarks.BrowseLandmarksViewModel;
@@ -36,6 +37,10 @@ public class HomescreenPresenter implements HomescreenOutputBoundary {
             blState.setUsername(username);
             browseLandmarksViewModel.setState(blState);
             browseLandmarksViewModel.firePropertyChange();
+        }
+        else if ("my progress".equals(targetView)) {
+            // event bus
+            EventBus.publish("ToMyProgress", viewModel.getState().getUsername());
         }
 
         viewManagerModel.setState(targetView);
