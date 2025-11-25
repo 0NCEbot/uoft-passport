@@ -5,9 +5,12 @@ import interface_adapter.ViewManagerModel;
 import interface_adapter.myprogress.MyProgressController;
 import interface_adapter.myprogress.MyProgressState;
 import interface_adapter.myprogress.MyProgressViewModel;
+import interface_adapter.logout.LogoutController;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -16,6 +19,7 @@ public class MyProgressView extends JPanel implements PropertyChangeListener {
     private final String viewName = "my progress";
     private final MyProgressViewModel viewModel;
     private final ViewManagerModel viewManagerModel;
+    private LogoutController logoutController;
 
     // Top bar
     private JLabel usernameLabel;
@@ -71,10 +75,13 @@ public class MyProgressView extends JPanel implements PropertyChangeListener {
         logoutLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         logoutLabel.setForeground(new Color(0, 102, 204));
         logoutLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        logoutLabel.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                viewManagerModel.setState("log in");
-                viewManagerModel.firePropertyChange();
+        logoutLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (logoutController != null) {
+                    String username = viewModel.getState().getUsername();
+                    logoutController.execute(username);
+                }
             }
         });
 
@@ -173,6 +180,10 @@ public class MyProgressView extends JPanel implements PropertyChangeListener {
         row.add(labelComponent);
         row.add(valueLabel);
         return row;
+    }
+
+    public void setLogoutController(LogoutController controller) {
+        this.logoutController = controller;
     }
 
     @Override

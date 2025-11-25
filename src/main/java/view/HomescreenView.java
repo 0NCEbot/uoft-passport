@@ -3,6 +3,7 @@ package view;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.homescreen.HomescreenViewModel;
 import interface_adapter.homescreen.HomescreenController;
+import interface_adapter.logout.LogoutController;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,6 +20,7 @@ public class HomescreenView extends JPanel implements PropertyChangeListener {
     private final HomescreenViewModel viewModel;
     private final ViewManagerModel viewManagerModel;
     private HomescreenController controller;
+    private LogoutController logoutController;
 
     private JLabel usernameLabel;
 
@@ -48,6 +50,15 @@ public class HomescreenView extends JPanel implements PropertyChangeListener {
         logoutLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         logoutLabel.setForeground(new Color(0, 102, 204));
         logoutLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        logoutLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (logoutController != null) {
+                    String username = viewModel.getState().getUsername();
+                    logoutController.execute(username);
+                }
+            }
+        });
 
         topBar.add(userPanel, BorderLayout.WEST);
         topBar.add(logoutLabel, BorderLayout.EAST);
@@ -158,7 +169,9 @@ public class HomescreenView extends JPanel implements PropertyChangeListener {
         this.controller = controller;
     }
 
-
+    public void setLogoutController(LogoutController controller) {
+        this.logoutController = controller;
+    }
 
     private JButton createStyledButton(String text) {
         JButton button = new JButton(text);
