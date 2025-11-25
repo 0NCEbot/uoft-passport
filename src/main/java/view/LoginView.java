@@ -94,11 +94,13 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
         Dimension buttonSize = new Dimension(140, 40);
         logIn.setPreferredSize(buttonSize);
         signUp.setPreferredSize(buttonSize);
+        logIn.setOpaque(true);
         logIn.setBackground(new Color(230, 240, 255));       // light blue
         logIn.setForeground(new Color(20, 60, 160));         // deep blue text
         logIn.setFocusPainted(false);
         logIn.setBorder(BorderFactory.createLineBorder(new Color(20, 60, 160), 2));
 
+        signUp.setOpaque(true);
         signUp.setBackground(new Color(255, 255, 255));      // white
         signUp.setForeground(new Color(20, 60, 160));        // deep blue
         signUp.setFocusPainted(false);

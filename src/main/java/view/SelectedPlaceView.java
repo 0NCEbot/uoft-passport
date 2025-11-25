@@ -107,16 +107,16 @@ public class SelectedPlaceView extends JPanel implements PropertyChangeListener 
         JButton notesButton = createBigButton("Notes");
 
         checkInButton.addActionListener(e -> {
-            if (!checkInButton.isEnabled()) {
+            if ("Checked in ✔".equals(checkInButton.getText())) {
                 return;
             }
             if (controller != null) {
                 controller.checkIn();
             }
+            checkInButton.setText("Checked in ✔");
             checkInButton.setBackground(new Color(0, 180, 0));
             checkInButton.setForeground(Color.WHITE);
-            checkInButton.setBorder(BorderFactory.createLineBorder(new Color(0, 140, 0), 2));
-            checkInButton.setEnabled(false);
+            checkInButton.setBorderPainted(false);
         });
 
         notesButton.addActionListener(e -> {
@@ -202,6 +202,7 @@ public class SelectedPlaceView extends JPanel implements PropertyChangeListener 
         btn.setPreferredSize(new Dimension(200, 70));
         btn.setMaximumSize(new Dimension(200, 70));
         btn.setFocusPainted(false);
+        btn.setOpaque(true);
         btn.setBackground(Color.WHITE);
         btn.setForeground(new Color(0, 102, 204));
         btn.setBorder(BorderFactory.createLineBorder(new Color(0, 102, 204), 2));
@@ -233,9 +234,11 @@ public class SelectedPlaceView extends JPanel implements PropertyChangeListener 
 
         // reset Check In button appearance
         if (checkInButton != null) {
+            checkInButton.setText("Check In");
             checkInButton.setEnabled(true);
             checkInButton.setBackground(Color.WHITE);
             checkInButton.setForeground(new Color(0, 102, 204));
+            checkInButton.setBorderPainted(true);
             checkInButton.setBorder(
                     BorderFactory.createLineBorder(new Color(0, 102, 204), 2)
             );
