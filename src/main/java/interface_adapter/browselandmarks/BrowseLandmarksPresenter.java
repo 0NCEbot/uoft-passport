@@ -25,6 +25,8 @@ public class BrowseLandmarksPresenter implements BrowseLandmarksOutputBoundary {
                     vm.name = dto.name;
                     vm.latitude = dto.latitude;
                     vm.longitude = dto.longitude;
+                    vm.type = dto.type;
+                    vm.visitCount = dto.visitCount;
                     return vm;
                 })
                 .collect(Collectors.toList());
