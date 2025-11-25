@@ -15,7 +15,7 @@ public class MyProgressState {
     private int mostVisitedLandmarkCount;
 
     public MyProgressState() {
-        this.username = "";
+        this.username = null;
         this.uniqueLandmarksVisited = 0;
         this.uniqueLandmarksTotal = 0;
         this.uniqueLandmarksCompletionPercentage = 0;

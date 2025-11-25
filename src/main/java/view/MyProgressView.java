@@ -38,25 +38,17 @@ public class MyProgressView extends JPanel implements PropertyChangeListener {
         this.viewManagerModel = viewManagerModel;
 
         // Subscribe to global event
-        EventBus.subscribe("visitModified", payload -> {
+        EventBus.subscribe("ToMyProgress", payload -> {
+            // let's just make it blindly accept username ig
             String username = (String) payload;
-            String currentUser = viewModel.getState().getUsername();
-
-            if (currentUser != null && currentUser.equals(username) && controller != null) {
-                System.out.println("[MyProgressView] Visit modified, refreshing...");
-                controller.execute(currentUser);
+            // String currentUser = viewModel.getState().getUsername();
+            if (controller == null) {
+                return;
             }
-        });
-
-        // Initialize when user logs in
-        EventBus.subscribe("userLoggedIn", payload -> {
-            String username = (String) payload;
-            MyProgressState state = viewModel.getState();
-            state.setUsername(username);
-            viewModel.setState(state);
-            if (controller != null) {
-                System.out.println("[MyProgressView] Login detected, preparing view...");
-                controller.execute(username);
+            System.out.println("[MyProgressView] Navigated to My Progress");
+            controller.execute();
+            if (viewModel.getState().getUsername() == null) {
+                throw new RuntimeException("Username is null");
             }
         });
 
@@ -132,6 +124,7 @@ public class MyProgressView extends JPanel implements PropertyChangeListener {
         visitHistoryButton.setFocusPainted(false);
         visitHistoryButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         visitHistoryButton.addActionListener(e -> {
+            EventBus.publish("ToViewHistory", viewModel.getState().getUsername());
             viewManagerModel.setState("view history");
             viewManagerModel.firePropertyChange();
         });
@@ -185,16 +178,6 @@ public class MyProgressView extends JPanel implements PropertyChangeListener {
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         MyProgressState state = (MyProgressState) evt.getNewValue();
-
-        // If username changed and we have a controller, load data
-        String username = state.getUsername();
-        if (username != null && !username.isEmpty() && controller != null) {
-            // Check if we need to load (stats are still empty)
-            if (state.getTotalVisits() == 0 && state.getUniqueLandmarksVisited() == 0) {
-                controller.execute(username);
-                return;  // Will trigger another propertyChange with full data
-            }
-        }
 
         updateDisplay(state);
     }

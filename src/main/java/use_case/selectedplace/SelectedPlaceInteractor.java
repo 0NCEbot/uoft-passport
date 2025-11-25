@@ -75,9 +75,6 @@ public class SelectedPlaceInteractor implements SelectedPlaceInputBoundary {
 
         userDAO.save(user);
 
-        // Publish global event for other views to react
-        EventBus.publish("visitModified", username);
-
         LandmarkInfo info = landmark.getLandmarkInfo();
         SelectedPlaceOutputData output = new SelectedPlaceOutputData(
                 username,

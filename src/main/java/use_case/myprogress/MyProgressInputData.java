@@ -1,5 +1,8 @@
 package use_case.myprogress;
 
+/**
+ * Useless (for now). Don't use it.
+ */
 public class MyProgressInputData {
     private final String username;
 
