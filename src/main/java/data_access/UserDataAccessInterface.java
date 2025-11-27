@@ -4,6 +4,7 @@ import use_case.login.LoginUserDataAccessInterface;
 import use_case.signup.SignupUserDataAccessInterface;
 import use_case.viewhistory.ViewHistoryUserDataAccessInterface;
 import use_case.undovisit.UndoVisitUserDataAccessInterface;
+import use_case.logout.LogoutUserDataAccessInterface;
 
 /**
  * Composite Data Access Interface.
@@ -15,6 +16,7 @@ import use_case.undovisit.UndoVisitUserDataAccessInterface;
 public interface UserDataAccessInterface extends LoginUserDataAccessInterface,
         SignupUserDataAccessInterface,
         ViewHistoryUserDataAccessInterface,
-        UndoVisitUserDataAccessInterface {
+        UndoVisitUserDataAccessInterface,
+        LogoutUserDataAccessInterface {
     // Composite interface for easier code writing
 }

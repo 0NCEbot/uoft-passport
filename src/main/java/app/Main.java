@@ -23,6 +23,7 @@ public class Main {
                 .addHomescreenUseCase()
                 .addPlanRouteView()
                 .addPlanRouteUseCase()
+                .addLogoutUseCase()
                 .build();
 
         application.pack();

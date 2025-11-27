@@ -5,10 +5,14 @@ import interface_adapter.ViewManagerModel;
 import interface_adapter.browselandmarks.BrowseLandmarksController;
 import interface_adapter.browselandmarks.BrowseLandmarksState;
 import interface_adapter.browselandmarks.BrowseLandmarksViewModel;
+import interface_adapter.logout.LogoutController;
 import interface_adapter.selectedplace.SelectedPlaceController;
+import interface_adapter.logout.LogoutController;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -26,6 +30,7 @@ public class BrowseLandmarksView extends JPanel implements PropertyChangeListene
     private final JList<String> landmarkList = new JList<>(listModel);
     private final StaticMapPanel mapPanel = new StaticMapPanel();
     private final SelectedPlaceController selectedPlaceController;
+    private LogoutController logoutController;
 
     private JLabel usernameLabel;
 
@@ -78,6 +83,15 @@ public class BrowseLandmarksView extends JPanel implements PropertyChangeListene
         logoutLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         logoutLabel.setForeground(new Color(0, 102, 204));
         logoutLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        logoutLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (logoutController != null) {
+                    String username = viewModel.getState().getUsername();
+                    logoutController.execute(username);
+                }
+            }
+        });
 
         topBar.add(userPanel, BorderLayout.WEST);
         topBar.add(logoutLabel, BorderLayout.EAST);
@@ -226,6 +240,10 @@ public class BrowseLandmarksView extends JPanel implements PropertyChangeListene
         });
 
         controller.loadLandmarks();
+    }
+
+    public void setLogoutController(LogoutController controller) {
+        this.logoutController = controller;
     }
 
     @Override

@@ -19,6 +19,8 @@ import interface_adapter.homescreen.HomescreenViewModel;
 import interface_adapter.login.LoginController;
 import interface_adapter.login.LoginPresenter;
 import interface_adapter.login.LoginViewModel;
+import interface_adapter.logout.LogoutController;
+import interface_adapter.logout.LogoutPresenter;
 import interface_adapter.myprogress.*;
 import interface_adapter.selectedplace.SelectedPlaceController;
 import interface_adapter.selectedplace.SelectedPlacePresenter;
@@ -34,6 +36,7 @@ import interface_adapter.addnotes.AddNotesViewModel;
 import interface_adapter.planroute.PlanRouteController;
 import interface_adapter.planroute.PlanRoutePresenter;
 import interface_adapter.planroute.PlanRouteViewModel;
+
 // NEW imports for View History
 import interface_adapter.viewhistory.ViewHistoryController;
 import interface_adapter.viewhistory.ViewHistoryPresenter;
@@ -47,6 +50,9 @@ import use_case.homescreen.HomescreenOutputBoundary;
 import use_case.login.LoginInputBoundary;
 import use_case.login.LoginInteractor;
 import use_case.login.LoginOutputBoundary;
+import use_case.logout.LogoutInputBoundary;
+import use_case.logout.LogoutInteractor;
+import use_case.logout.LogoutOutputBoundary;
 import use_case.myprogress.MyProgressInputBoundary;
 import use_case.myprogress.MyProgressInteractor;
 import use_case.myprogress.MyProgressOutputBoundary;
@@ -138,6 +144,8 @@ public class AppBuilder {
     private AddNotesController notesController;
     // NEW: view history controller
     private ViewHistoryController viewHistoryController;
+
+    private LogoutController logoutController;
 
     private PlanRouteViewModel planRouteViewModel;
     private PlanRouteView planRouteView;
@@ -366,6 +374,61 @@ public class AppBuilder {
 
         MyProgressController controller = new MyProgressController(interactor);
         myProgressView.setMyProgressController(controller);
+        return this;
+    }
+
+    public AppBuilder addLogoutUseCase() {
+        LogoutOutputBoundary logoutPresenter =
+                new LogoutPresenter(viewManagerModel, loginViewModel);
+
+        LogoutInputBoundary logoutInteractor =
+                new LogoutInteractor(userDataAccessObject, logoutPresenter);
+
+        logoutController = new LogoutController(logoutInteractor);
+
+        // Add null checks and debug logging
+        if (homescreenView != null) {
+            homescreenView.setLogoutController(logoutController);
+            System.out.println("Set logout controller on HomescreenView");
+        } else {
+            System.err.println("WARNING: homescreenView is null!");
+        }
+
+        if (browseLandmarksView != null) {
+            browseLandmarksView.setLogoutController(logoutController);
+            System.out.println("Set logout controller on BrowseLandmarksView");
+        } else {
+            System.err.println("WARNING: browseLandmarksView is null!");
+        }
+
+        if (selectedPlaceView != null) {
+            selectedPlaceView.setLogoutController(logoutController);
+            System.out.println("Set logout controller on SelectedPlaceView");
+        } else {
+            System.err.println("WARNING: selectedPlaceView is null!");
+        }
+
+        if (notesView != null) {
+            notesView.setLogoutController(logoutController);
+            System.out.println("Set logout controller on AddNotesView");
+        } else {
+            System.err.println("WARNING: notesView is null!");
+        }
+
+        if (myProgressView != null) {
+            myProgressView.setLogoutController(logoutController);
+            System.out.println("Set logout controller on MyProgressView");
+        } else {
+            System.err.println("WARNING: myProgressView is null!");
+        }
+
+        if (viewHistoryView != null) {
+            viewHistoryView.setLogoutController(logoutController);
+            System.out.println("Set logout controller on ViewHistoryView");
+        } else {
+            System.err.println("WARNING: viewHistoryView is null!");
+        }
+
         return this;
     }
 

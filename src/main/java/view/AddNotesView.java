@@ -9,6 +9,7 @@ import interface_adapter.editnote.EditNoteController;
 import interface_adapter.editnote.EditNoteViewModel;
 import interface_adapter.deletenote.DeleteNoteController;
 import interface_adapter.deletenote.DeleteNoteViewModel;
+import interface_adapter.logout.LogoutController;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -20,6 +21,8 @@ import org.json.JSONObject;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -30,6 +33,7 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
     private final ViewManagerModel viewManagerModel;
 
     private AddNotesController controller;
+    private LogoutController logoutController;
 
     // ADD THESE FIELDS:
     private EditNoteController editNoteController;
@@ -92,6 +96,15 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
         logoutLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         logoutLabel.setForeground(new Color(0, 102, 204));
         logoutLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        logoutLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (logoutController != null) {
+                    String username = viewModel.getState().getUsername();
+                    logoutController.execute(username);
+                }
+            }
+        });
 
         topBar.add(userPanel, BorderLayout.WEST);
         topBar.add(logoutLabel, BorderLayout.EAST);
@@ -256,6 +269,10 @@ public class AddNotesView extends JPanel implements PropertyChangeListener {
 
     public void setNotesController(AddNotesController controller) {
         this.controller = controller;
+    }
+
+    public void setLogoutController(LogoutController controller) {
+        this.logoutController = controller;
     }
 
     public String getViewName() {

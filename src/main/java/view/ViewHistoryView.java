@@ -2,12 +2,16 @@ package view;
 
 import interface_adapter.EventBus;
 import interface_adapter.ViewManagerModel;
+import interface_adapter.logout.LogoutController;
 import interface_adapter.viewhistory.ViewHistoryController;
 import interface_adapter.viewhistory.ViewHistoryState;
 import interface_adapter.viewhistory.ViewHistoryViewModel;
+import interface_adapter.logout.LogoutController;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -27,6 +31,7 @@ public class ViewHistoryView extends JPanel implements PropertyChangeListener {
     private final ViewManagerModel viewManagerModel;
 
     private ViewHistoryController controller;
+    private LogoutController logoutController;
 
     // UI Components
     private JLabel usernameLabel;
@@ -94,14 +99,17 @@ public class ViewHistoryView extends JPanel implements PropertyChangeListener {
         usernameLabel.setForeground(new Color(0, 102, 204));
         userPanel.add(usernameLabel);
 
-        // Logout link
         JLabel logoutLabel = new JLabel("Logout");
         logoutLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         logoutLabel.setForeground(new Color(0, 102, 204));
         logoutLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        logoutLabel.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                navigateToLogin();
+        logoutLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (logoutController != null) {
+                    String username = viewModel.getState().getUsername();
+                    logoutController.execute(username);
+                }
             }
         });
 
@@ -270,6 +278,10 @@ public class ViewHistoryView extends JPanel implements PropertyChangeListener {
      */
     public void setController(ViewHistoryController controller) {
         this.controller = controller;
+    }
+
+    public void setLogoutController(LogoutController controller) {
+        this.logoutController = controller;
     }
 
     /**
