@@ -4,6 +4,7 @@ import interface_adapter.ViewManagerModel;
 import interface_adapter.planroute.PlanRouteController;
 import interface_adapter.planroute.PlanRouteState;
 import interface_adapter.planroute.PlanRouteViewModel;
+import data_access.UserDataAccessInterface;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,6 +16,7 @@ public class PlanRouteView extends JPanel implements PropertyChangeListener {
     private final String viewName = "plan a route";
     private final PlanRouteViewModel viewModel;
     private final ViewManagerModel viewManagerModel;
+    private final UserDataAccessInterface userDAO;
     private PlanRouteController controller;
 
     // UI Components
@@ -35,9 +37,11 @@ public class PlanRouteView extends JPanel implements PropertyChangeListener {
     private JButton completeStepButton;
     private JButton checkInButton;
 
-    public PlanRouteView(PlanRouteViewModel viewModel, ViewManagerModel viewManagerModel) {
+    public PlanRouteView(PlanRouteViewModel viewModel, ViewManagerModel viewManagerModel,
+                         UserDataAccessInterface userDAO) {
         this.viewModel = viewModel;
         this.viewManagerModel = viewManagerModel;
+        this.userDAO = userDAO;
         this.viewModel.addPropertyChangeListener(this);
 
         setLayout(new BorderLayout());
@@ -54,7 +58,9 @@ public class PlanRouteView extends JPanel implements PropertyChangeListener {
 
         JPanel userPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         userPanel.setOpaque(false);
-        usernameLabel = new JLabel("Username");
+        // Initialize with current username or default
+        String currentUser = userDAO.getCurrentUsername();
+        usernameLabel = new JLabel(currentUser != null ? currentUser : "Username");
         usernameLabel.setFont(new Font("Arial", Font.PLAIN, 16));
         usernameLabel.setForeground(new Color(0, 102, 204));
         userPanel.add(usernameLabel);
@@ -277,17 +283,45 @@ public class PlanRouteView extends JPanel implements PropertyChangeListener {
         add(bottomBar, BorderLayout.SOUTH);
     }
 
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        // Update username when view becomes visible
+        updateUsername();
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
+        if (visible) {
+            updateUsername();
+        }
+    }
+
     public void setPlanRouteController(PlanRouteController controller) {
         this.controller = controller;
     }
 
     public String getViewName() { return viewName; }
 
+    /**
+     * Update the username label with the current logged-in user
+     */
+    private void updateUsername() {
+        String username = userDAO.getCurrentUsername();
+        if (username != null && !username.isEmpty()) {
+            usernameLabel.setText(username);
+        }
+    }
+
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (!"state".equals(evt.getPropertyName())) return;
 
         PlanRouteState state = (PlanRouteState) evt.getNewValue();
+
+        // Update username whenever state changes
+        updateUsername();
 
         totalDistanceLabel.setText("Total Distance: " + state.getTotalDistance());
         totalDurationLabel.setText("Total Duration: " + state.getTotalDuration());
