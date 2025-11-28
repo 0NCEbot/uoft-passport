@@ -29,7 +29,7 @@ A UofT campus exploration app where students can check-in to landmarks across ca
 | Lead | Use Case | User Story |
 |----------|--------|---------|
 | Darren | Browse landmarks | 1, 10 |
-| Nathan | Check into a location | 2 |
+| Nathan | Check into a location | 2, 8 |
 | Kitas | View exploration progress | 3, 9 |
 | Dan | Plan a route | 4 |
 | Joey | Add personal note | 5 |
