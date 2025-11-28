@@ -230,7 +230,7 @@ public class AppBuilder {
 
     public AppBuilder addPlanRouteView() {
         planRouteViewModel = new PlanRouteViewModel();
-        planRouteView = new PlanRouteView(planRouteViewModel, viewManagerModel);
+        planRouteView = new PlanRouteView(planRouteViewModel, viewManagerModel, userDataAccessObject);
         cardPanel.add(planRouteView, planRouteView.getViewName());
         return this;
     }
@@ -322,11 +322,17 @@ public class AppBuilder {
         PlanRouteInputBoundary interactor =
                 new PlanRouteInteractor(routeDAO, landmarkDataAccessObject, presenter);
 
-        planRouteController = new PlanRouteController(interactor, planRouteViewModel);
+        // Pass both userDataAccessObject and landmarkDataAccessObject
+        planRouteController = new PlanRouteController(
+                interactor,
+                planRouteViewModel,
+                userDataAccessObject,
+                landmarkDataAccessObject
+        );
+
         planRouteView.setPlanRouteController(planRouteController);
 
         return this;
-
     }
     /**
      * Adds the View History view and wires the use cases.
