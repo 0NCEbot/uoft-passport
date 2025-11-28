@@ -330,6 +330,14 @@ public class BrowseLandmarksView extends JPanel implements PropertyChangeListene
     private void applyFilters() {
         String selectedType = (String) typeFilterDropdown.getSelectedItem();
 
+        System.out.println("===== BrowseLandmarksView.applyFilters() =====");
+        System.out.println("Current visit filter: " + currentVisitFilter);
+        System.out.println("Total landmarks to filter: " + allLandmarks.size());
+        System.out.println("Landmarks with visitCount > 0:");
+        allLandmarks.stream()
+            .filter(lm -> lm.visitCount > 0)
+            .forEach(lm -> System.out.println("  - " + lm.name + " (visits: " + lm.visitCount + ")"));
+
         List<BrowseLandmarksState.LandmarkVM> filtered = allLandmarks.stream()
                 .filter(landmark -> {
                     // Type filter
@@ -346,6 +354,9 @@ public class BrowseLandmarksView extends JPanel implements PropertyChangeListene
                     return typeMatch && visitMatch;
                 })
                 .collect(Collectors.toList());
+
+        System.out.println("Filtered landmarks count: " + filtered.size());
+        System.out.println("============================================");
 
         // Update the list
         listModel.clear();

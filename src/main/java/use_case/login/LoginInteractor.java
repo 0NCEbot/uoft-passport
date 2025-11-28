@@ -37,8 +37,8 @@ public class LoginInteractor implements LoginInputBoundary {
 
                 userDataAccessObject.setCurrentUsername(username);
 
-//                // Just publish one event - other views initialize themselves
-//                EventBus.publish("userLoggedIn", username);
+                // Just publish one event - other views initialize themselves
+                EventBus.publish("userLoggedIn", username);
 
                 final LoginOutputData loginOutputData = new LoginOutputData(user.getUsername());
                 loginPresenter.prepareSuccessView(loginOutputData);

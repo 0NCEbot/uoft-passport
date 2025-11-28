@@ -75,6 +75,9 @@ public class SelectedPlaceInteractor implements SelectedPlaceInputBoundary {
 
         userDAO.save(user);
 
+        // Publish event to notify other views (e.g., BrowseLandmarksView) that visits changed
+        EventBus.publish("visitModified", username);
+
         LandmarkInfo info = landmark.getLandmarkInfo();
         SelectedPlaceOutputData output = new SelectedPlaceOutputData(
                 username,
