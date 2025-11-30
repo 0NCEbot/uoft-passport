@@ -25,7 +25,6 @@ A UofT campus exploration app where students can check-in to landmarks across ca
 
 
 ## Use Cases
-
 | Lead | Use Case | User Story |
 |----------|--------|---------|
 | Darren | Browse landmarks | 1, 10 |
@@ -36,6 +35,34 @@ A UofT campus exploration app where students can check-in to landmarks across ca
 | Steven | View visit history | 6 |
 
 ## API Information
-- [Maps Static API](https://developers.google.com/maps/documentation/maps-static)
-- [Routes API](https://developers.google.com/maps/documentation/routes)
-- [Places API](https://developers.google.com/maps/documentation/places/)
+| Name | Provides |
+| --- | --- |
+| [Maps Static API](https://developers.google.com/maps/documentation/maps-static) | Static map images | 
+| [Routes API](https://developers.google.com/maps/documentation/routes) | Maps directions between two (or more) landmarks |
+| [Places API](https://developers.google.com/maps/documentation/places/) | Landmark info (opening hours, description, images) |
+
+## Functionality Screenshots
+
+| Login/signup | Home screen |
+| ------------- | ------------- |
+| ![](https://i.ibb.co/BVxQYf2G/Screenshot-2025-11-29-at-4-06-12-PM.png)  | ![](https://i.ibb.co/d4kYz1FS/Screenshot-2025-11-29-at-4-06-17-PM.png)  |
+
+| Landmark list  | Selected landmark |
+| ------------- | ------------- |
+| ![](https://i.ibb.co/G4XQK7P6/Screenshot-2025-11-29-at-4-08-11-PM.png)  | ![](https://i.ibb.co/8ncpsDvt/Screenshot-2025-11-29-at-4-09-15-PM.png)  |
+
+| Check in | Viewing notes |
+| ------------- | ------------- |
+| ![](https://i.ibb.co/jvVGZ1ww/Screenshot-2025-11-29-at-4-09-18-PM.png) | ![](https://i.ibb.co/xSCHk30D/Screenshot-2025-11-29-at-4-09-31-PM.png) |
+
+| Adding a note | Plan a route |
+| ------------- | ------------- |
+| ![](https://i.ibb.co/NgtzGgQM/Screenshot-2025-11-29-at-4-09-33-PM.png) | ![](https://i.ibb.co/C3PChpcJ/Screenshot-2025-11-29-at-4-11-45-PM.png) |
+
+| Check in while following route plan | Viewing progress |
+| ------------- | ------------- |
+| ![](https://i.ibb.co/DHNdDcZy/Screenshot-2025-11-29-at-4-12-31-PM.png) | ![](https://i.ibb.co/DPd0G3kn/Screenshot-2025-11-29-at-4-12-45-PM.png) |
+
+| Visit history | Undoing a visit |
+| ------------- | ------------- |
+| ![](https://i.ibb.co/sJ9v1CR8/Screenshot-2025-11-29-at-4-13-35-PM.png) | ![](https://i.ibb.co/HDVhKySK/Screenshot-2025-11-29-at-4-13-41-PM.png) |
