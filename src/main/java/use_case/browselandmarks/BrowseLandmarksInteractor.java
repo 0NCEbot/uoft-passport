@@ -54,7 +54,6 @@ public class BrowseLandmarksInteractor implements BrowseLandmarksInputBoundary {
         if (user != null && user.getVisits() != null) {
             System.out.println("\n*** All visit landmark names from user object: ***");
             user.getVisits().stream()
-                .filter(v -> v != null && v.getLandmark() != null)
                 .map(v -> v.getLandmark().getLandmarkName())
                 .distinct()
                 .sorted()
@@ -69,13 +68,7 @@ public class BrowseLandmarksInteractor implements BrowseLandmarksInputBoundary {
                         String landmarkName = l.getLandmarkName().trim();
                         visitCount = (int) user.getVisits().stream()
                                 .filter(visit -> {
-                                    if (visit == null || visit.getLandmark() == null) {
-                                        return false;
-                                    }
                                     String visitLandmarkName = visit.getLandmark().getLandmarkName();
-                                    if (visitLandmarkName == null) {
-                                        return false;
-                                    }
                                     boolean matches = visitLandmarkName.trim().equals(landmarkName);
                                     if (matches) {
                                         System.out.println("MATCH: '" + landmarkName + "' = '" + visitLandmarkName + "'");
