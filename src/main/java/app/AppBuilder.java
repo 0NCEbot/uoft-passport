@@ -1,6 +1,5 @@
 package app;
 
-import data_access.*;
 import data_access.JsonUserDataAccessObject;
 import data_access.JsonLandmarkDataAccessObject;
 import data_access.LandmarkDataAccessInterface;
