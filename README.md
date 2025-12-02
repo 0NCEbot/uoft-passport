@@ -20,19 +20,17 @@ A UofT campus exploration app where students can check-in to landmarks across ca
 6. As a user, I want to see all my past visits and undo a visit.
 7. As a user, I want to filter the list of landmarks by different parameters (number of visits, landmark type)
 8. As a user, I want to be able to edit or delete my note on a place I’ve visited.
-9. As a user, I want to register my account and store my account data.
-10. As a user, I want to be able to log in to my account so that only I can access my account.
 
 
 ## Use Cases
 | Lead | Use Case | User Story |
 |----------|--------|---------|
-| Darren | Browse landmarks | 1, 10 |
+| Darren | Browse landmarks | 1 |
 | Nathan | Check into a location | 2, 8 |
-| Kitas | View exploration progress | 3, 9 |
+| Kitas | View exploration progress | 3 |
 | Dan | Plan a route | 4 |
 | Joey | Add personal note | 5 |
-| Steven | View visit history | 6 |
+| Steven | View visit history | 6, 7 |
 
 ## API Information
 | Name | Provides |
