@@ -11,6 +11,20 @@ import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Tests implemented:
+ * testSuccessfulNoteDeletion
+ * testDeleteNonExistentNote
+ * testDeleteNoteWithNullId
+ * testDeleteNoteRetrievesCorrectLandmarkName
+ * testInteractorCallsDataAccessMethodsInCorrectOrder
+ * testOutputBoundaryOnlyReceivesOneCall
+ * testOutputBoundaryOnlyReceivesFailCallForNonExistent
+ * testDeleteNoteWithEmptyStringId
+ * testGetNoteByIdNotCalledWhenNoteDoesNotExist
+ * testDeleteNoteWithSpecialCharactersInLandmarkName
+ */
+
 class DeleteNoteInteractorTest {
     private DeleteNoteDataAccessInterface mockDataAccess;
     private DeleteNoteOutputBoundary mockOutputBoundary;
@@ -19,34 +33,34 @@ class DeleteNoteInteractorTest {
     // Test data
     private Landmark testLandmark;
     private Note testNote;
-    private static final String TEST_NOTE_ID = "test-note-123";
-    private static final String TEST_LANDMARK_NAME = "CN Tower";
+    private static final String TEST_NOTE_ID = "Bahen Centre for Information Technology2025-11-30T00:34:24.550208Z";
+    private static final String TEST_LANDMARK_NAME = "Bahen Centre for Information Technology";
 
     @BeforeEach
     void setUp() {
         // Create test landmark
-        Location location = new Location(43.6426, -79.3871);
+        Location location = new Location(43.6596, -79.3975);
         LandmarkInfo info = new LandmarkInfo(
-                "301 Front St W",
-                "Famous tower",
-                "9 AM - 10 PM",
-                "Tourist Attraction"
+                "40 St George St",
+                "Computer science and engineering building",
+                "24 hours",
+                "Academic Building"
         );
         testLandmark = new Landmark(
-                "landmark-1",
+                "bahen-centre",
                 TEST_LANDMARK_NAME,
                 location,
                 info,
-                100
+                150
         );
 
         // Create test note
         testNote = new Note(
                 TEST_NOTE_ID,
                 testLandmark,
-                "Great views from the top!",
-                Instant.now().minusSeconds(3600),
-                Instant.now().minusSeconds(1800)
+                "This place was Great!",
+                Instant.parse("2025-11-30T00:34:24.550460Z"),
+                Instant.parse("2025-11-30T00:35:52.162507Z")
         );
 
         // Initialize mocks
@@ -94,7 +108,7 @@ class DeleteNoteInteractorTest {
     @Test
     void testDeleteNonExistentNote() {
         // Given: A note does not exist in the system
-        DeleteNoteInputData inputData = new DeleteNoteInputData("non-existent-note");
+        DeleteNoteInputData inputData = new DeleteNoteInputData("Sidney Smith Hall2025-11-24T99:99:99.999999Z");
 
         // When: We try to delete the non-existent note
         interactor.execute(inputData);
@@ -137,28 +151,50 @@ class DeleteNoteInteractorTest {
     @Test
     void testDeleteNoteRetrievesCorrectLandmarkName() {
         // Given: Multiple notes exist with different landmarks
-        Location location1 = new Location(43.6426, -79.3871);
-        LandmarkInfo info1 = new LandmarkInfo("Address 1", "Desc 1", "Hours 1", "Type 1");
-        Landmark landmark1 = new Landmark("lm-1", "Robarts Library", location1, info1, 50);
-        Note note1 = new Note("note-1", landmark1, "Content 1", Instant.now(), Instant.now());
+        Location location1 = new Location(43.6645, -79.3996);
+        LandmarkInfo info1 = new LandmarkInfo(
+                "100 St George St",
+                "Large academic library",
+                "24 hours",
+                "Library"
+        );
+        Landmark landmark1 = new Landmark("robarts-library", "Robarts Library", location1, info1, 200);
+        Note note1 = new Note(
+                "Robarts Library2025-11-30T01:08:28.962320Z",
+                landmark1,
+                "great place to study",
+                Instant.parse("2025-11-30T01:08:28.962388Z"),
+                Instant.parse("2025-11-30T01:08:28.962388Z")
+        );
 
-        Location location2 = new Location(43.6629, -79.3957);
-        LandmarkInfo info2 = new LandmarkInfo("Address 2", "Desc 2", "Hours 2", "Type 2");
-        Landmark landmark2 = new Landmark("lm-2", "Casa Loma", location2, info2, 75);
-        Note note2 = new Note("note-2", landmark2, "Content 2", Instant.now(), Instant.now());
+        Location location2 = new Location(43.6640, -79.3943);
+        LandmarkInfo info2 = new LandmarkInfo(
+                "7 Hart House Circle",
+                "Historic student center",
+                "8 AM - 11 PM",
+                "Student Building"
+        );
+        Landmark landmark2 = new Landmark("hart-house", "Hart House", location2, info2, 180);
+        Note note2 = new Note(
+                "Hart House2025-11-24T06:56:13.795618Z",
+                landmark2,
+                "hihihihdcwbuibbuiuiubbbi",
+                Instant.parse("2025-11-24T06:56:13.795848Z"),
+                Instant.parse("2025-11-24T18:30:27.282099Z")
+        );
 
         MockDeleteNoteDataAccess mockDAO = (MockDeleteNoteDataAccess) mockDataAccess;
         mockDAO.addNote(note1);
         mockDAO.addNote(note2);
 
-        // When: We delete note-2
-        DeleteNoteInputData inputData = new DeleteNoteInputData("note-2");
+        // When: We delete the Hart House note
+        DeleteNoteInputData inputData = new DeleteNoteInputData("Hart House2025-11-24T06:56:13.795618Z");
         interactor.execute(inputData);
 
-        // Then: Output should contain Casa Loma as the landmark name
+        // Then: Output should contain Hart House as the landmark name
         MockDeleteNoteOutputBoundary mockPresenter = (MockDeleteNoteOutputBoundary) mockOutputBoundary;
         DeleteNoteOutputData outputData = mockPresenter.getOutputData();
-        assertEquals("Casa Loma", outputData.getLandmarkName(),
+        assertEquals("Hart House", outputData.getLandmarkName(),
                 "Should retrieve correct landmark name for the deleted note");
     }
 
@@ -221,7 +257,7 @@ class DeleteNoteInteractorTest {
     @Test
     void testOutputBoundaryOnlyReceivesFailCallForNonExistent() {
         // Given: Note does not exist
-        DeleteNoteInputData inputData = new DeleteNoteInputData("non-existent");
+        DeleteNoteInputData inputData = new DeleteNoteInputData("Convocation Hall2025-99-99T99:99:99.999999Z");
 
         // When: We execute delete
         interactor.execute(inputData);
@@ -262,7 +298,7 @@ class DeleteNoteInteractorTest {
     @Test
     void testGetNoteByIdNotCalledWhenNoteDoesNotExist() {
         // Given: No note exists with the given ID
-        DeleteNoteInputData inputData = new DeleteNoteInputData("non-existent-note");
+        DeleteNoteInputData inputData = new DeleteNoteInputData("E.J. Pratt Library2025-99-99T99:99:99.999999Z");
 
         // When: We try to delete the non-existent note
         interactor.execute(inputData);
@@ -282,25 +318,25 @@ class DeleteNoteInteractorTest {
     @Test
     void testDeleteNoteWithSpecialCharactersInLandmarkName() {
         // Given: A note with a landmark containing special characters
-        Location location = new Location(43.7, -79.4);
+        Location location = new Location(43.6664, -79.3916);
         LandmarkInfo info = new LandmarkInfo("Address", "Desc", "Hours", "Type");
         Landmark specialLandmark = new Landmark(
-                "lm-special",
-                "Café René's <Test> & \"Quotes\" 中文",
+                "pratt-library-special",
+                "E.J. Pratt Library & \"Special\" <Test> 中文",
                 location,
                 info,
                 10
         );
         Note specialNote = new Note(
-                "special-note-id",
+                "E.J. Pratt Library2025-11-24T07:06:27.418800Z",
                 specialLandmark,
-                "Special content",
-                Instant.now(),
-                Instant.now()
+                "hiu",
+                Instant.parse("2025-11-24T07:06:27.418836Z"),
+                Instant.parse("2025-11-24T07:06:27.418836Z")
         );
 
         ((MockDeleteNoteDataAccess) mockDataAccess).addNote(specialNote);
-        DeleteNoteInputData inputData = new DeleteNoteInputData("special-note-id");
+        DeleteNoteInputData inputData = new DeleteNoteInputData("E.J. Pratt Library2025-11-24T07:06:27.418800Z");
 
         // When: We delete the note
         interactor.execute(inputData);
@@ -308,7 +344,7 @@ class DeleteNoteInteractorTest {
         // Then: The landmark name with special characters should be correctly preserved in output
         MockDeleteNoteOutputBoundary mockPresenter = (MockDeleteNoteOutputBoundary) mockOutputBoundary;
         DeleteNoteOutputData outputData = mockPresenter.getOutputData();
-        assertEquals("Café René's <Test> & \"Quotes\" 中文", outputData.getLandmarkName(),
+        assertEquals("E.J. Pratt Library & \"Special\" <Test> 中文", outputData.getLandmarkName(),
                 "Landmark name with special characters should be preserved correctly");
         assertTrue(outputData.isSuccess(), "Deletion should succeed");
     }
