@@ -39,3 +39,6 @@ build/
 
 ### user files should never be uploaded/updated remotely ###
 users.*
+
+### diagram
+*.puml

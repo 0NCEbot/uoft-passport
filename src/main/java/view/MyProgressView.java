@@ -18,11 +18,10 @@ public class MyProgressView extends JPanel implements PropertyChangeListener {
 
     private final String viewName = "my progress";
     private final MyProgressViewModel viewModel;
-    private final ViewManagerModel viewManagerModel;
     private LogoutController logoutController;
 
     // Top bar
-    private JLabel usernameLabel;
+    private final JLabel usernameLabel;
 
     // Stats labels
     private final JLabel completionLabel = new JLabel(" ");
@@ -39,13 +38,9 @@ public class MyProgressView extends JPanel implements PropertyChangeListener {
     public MyProgressView(MyProgressViewModel viewModel, ViewManagerModel viewManagerModel) {
         this.viewModel = viewModel;
         this.viewModel.addPropertyChangeListener(this);
-        this.viewManagerModel = viewManagerModel;
 
         // Subscribe to global event
-        EventBus.subscribe("ToMyProgress", payload -> {
-            // let's just make it blindly accept username ig
-            String username = (String) payload;
-            // String currentUser = viewModel.getState().getUsername();
+        EventBus.subscribe("ToMyProgress", _ -> {
             if (controller == null) {
                 return;
             }

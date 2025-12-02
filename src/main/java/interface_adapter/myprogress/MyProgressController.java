@@ -1,7 +1,6 @@
 package interface_adapter.myprogress;
 
 import use_case.myprogress.MyProgressInputBoundary;
-import use_case.myprogress.MyProgressInputData;
 
 public class MyProgressController {
 
