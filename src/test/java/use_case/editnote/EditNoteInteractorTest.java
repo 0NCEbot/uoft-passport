@@ -13,6 +13,21 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Tests made:
+ * testSuccess
+ * testNoteNotFound
+ * testNullContent
+ * testEmptyContent
+ * testWhitespaceOnly
+ * testContentTooLong
+ * testExactly500Characters
+ * testSpecialCharacters
+ * testMultipleEdits
+ * testContentJustUNderLimit
+ */
+
+
 class EditNoteInteractorTest {
 
     private TestDataAccess dataAccess;
