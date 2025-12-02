@@ -22,6 +22,12 @@ import static org.junit.jupiter.api.Assertions.*;
  * testOutputBoundaryOnlyReceivesFailCallForNonExistent
  * testDeleteNoteWithEmptyStringId
  * testGetNoteByIdNotCalledWhenNoteDoesNotExist
+ * testMockGetNoteByIdReturnsNullForNonExistentNote
+ * testMockDeleteNoteWithDifferentId
+ * testMockGetNoteByIdWithDifferentId
+ * testMockNoteExistsWithDifferentId
+ * testCallOrderIndexOfNotFound
+ * testCallOrderIndexOfPartialList
  * testDeleteNoteWithSpecialCharactersInLandmarkName
  */
 
@@ -212,19 +218,16 @@ class DeleteNoteInteractorTest {
         // When: We execute delete
         interactor.execute(inputData);
 
-        // Then: Verify methods were called in correct order
+        // Then: Verify all methods were called
         MockDeleteNoteDataAccess mockDAO = (MockDeleteNoteDataAccess) mockDataAccess;
         assertTrue(mockDAO.wasNoteExistsCalled(), "noteExists should be called");
         assertTrue(mockDAO.wasGetNoteByIdCalled(), "getNoteById should be called");
         assertTrue(mockDAO.wasDeleteCalled(), "deleteNote should be called");
 
-        // Verify the order: exists check -> get note -> delete
-        assertTrue(mockDAO.getCallOrder().indexOf("noteExists") <
-                        mockDAO.getCallOrder().indexOf("getNoteById"),
-                "noteExists should be called before getNoteById");
-        assertTrue(mockDAO.getCallOrder().indexOf("getNoteById") <
-                        mockDAO.getCallOrder().indexOf("deleteNote"),
-                "getNoteById should be called before deleteNote");
+        // Verify the correct order by checking the call order list
+        assertEquals("noteExists", mockDAO.getCallOrder().get(0), "First call should be noteExists");
+        assertEquals("getNoteById", mockDAO.getCallOrder().get(1), "Second call should be getNoteById");
+        assertEquals("deleteNote", mockDAO.getCallOrder().get(2), "Third call should be deleteNote");
     }
 
     /**
@@ -308,6 +311,117 @@ class DeleteNoteInteractorTest {
         assertTrue(mockDAO.wasNoteExistsCalled(), "noteExists should be called");
         assertFalse(mockDAO.wasGetNoteByIdCalled(), "getNoteById should not be called when note doesn't exist");
         assertFalse(mockDAO.wasDeleteCalled(), "deleteNote should not be called when note doesn't exist");
+    }
+
+    /**
+     * Test that mock getNoteById returns null for non-existent note.
+     * Verifies the mock data access implementation correctly handles
+     * requests for notes that don't exist.
+     */
+    @Test
+    void testMockGetNoteByIdReturnsNullForNonExistentNote() {
+        // Given: Mock data access with no stored note
+        MockDeleteNoteDataAccess mockDAO = new MockDeleteNoteDataAccess();
+
+        // When: We try to get a note that doesn't exist
+        Note result = mockDAO.getNoteById("NonExistent2025-99-99T99:99:99.999999Z");
+
+        // Then: Should return null
+        assertNull(result, "getNoteById should return null for non-existent note");
+    }
+
+    /**
+     * Test that mock deleteNote handles deletion of non-matching note ID.
+     * Verifies the mock correctly handles deletion attempts when stored note
+     * has a different ID than the one being deleted.
+     */
+    @Test
+    void testMockDeleteNoteWithDifferentId() {
+        // Given: A note is stored with one ID
+        MockDeleteNoteDataAccess mockDAO = new MockDeleteNoteDataAccess();
+        mockDAO.addNote(testNote);
+
+        // When: We try to delete a different note ID
+        mockDAO.deleteNote("DifferentNote2025-11-30T00:00:00.000000Z");
+
+        // Then: The delete should be called but stored note remains
+        assertTrue(mockDAO.wasDeleteCalled(), "Delete should be called");
+        assertNotNull(mockDAO.getNoteById(TEST_NOTE_ID), "Original note should still exist");
+    }
+
+    /**
+     * Test that mock getNoteById returns null when note ID doesn't match.
+     * Verifies the mock correctly handles the false branch of equals().
+     */
+    @Test
+    void testMockGetNoteByIdWithDifferentId() {
+        // Given: A note is stored with one ID
+        MockDeleteNoteDataAccess mockDAO = new MockDeleteNoteDataAccess();
+        mockDAO.addNote(testNote);
+
+        // When: We try to get a note with a different ID
+        Note result = mockDAO.getNoteById("DifferentNote2025-11-30T00:00:00.000000Z");
+
+        // Then: Should return null even though storedNote is not null
+        assertNull(result, "getNoteById should return null when ID doesn't match");
+    }
+
+    /**
+     * Test that mock noteExists returns false when note ID doesn't match.
+     * Verifies the mock correctly handles the false branch of equals() in noteExists.
+     */
+    @Test
+    void testMockNoteExistsWithDifferentId() {
+        // Given: A note is stored with one ID
+        MockDeleteNoteDataAccess mockDAO = new MockDeleteNoteDataAccess();
+        mockDAO.addNote(testNote);
+
+        // When: We check if a different note ID exists
+        boolean exists = mockDAO.noteExists("DifferentNote2025-11-30T00:00:00.000000Z");
+
+        // Then: Should return false even though storedNote is not null
+        assertFalse(exists, "noteExists should return false when ID doesn't match");
+    }
+
+    /**
+     * Test call order indexOf when method is not in the list.
+     * Verifies indexOf returns -1 for methods not called.
+     */
+    @Test
+    void testCallOrderIndexOfNotFound() {
+        // Given: Fresh mock with no method calls
+        MockDeleteNoteDataAccess mockDAO = new MockDeleteNoteDataAccess();
+
+        // When: We check indexOf for a method that hasn't been called
+        int index = mockDAO.getCallOrder().indexOf("deleteNote");
+
+        // Then: Should return -1
+        assertEquals(-1, index, "indexOf should return -1 for method not in call order");
+
+        // Also test with getNoteById
+        int index2 = mockDAO.getCallOrder().indexOf("getNoteById");
+        assertEquals(-1, index2, "indexOf should return -1 for getNoteById not in call order");
+    }
+
+    /**
+     * Test call order indexOf with partial method calls.
+     * Verifies indexOf works correctly when list has some but not all methods.
+     */
+    @Test
+    void testCallOrderIndexOfPartialList() {
+        // Given: Mock with only noteExists called
+        MockDeleteNoteDataAccess mockDAO = new MockDeleteNoteDataAccess();
+        mockDAO.noteExists("someId");
+
+        // When: We check indexOf for methods
+        int existsIndex = mockDAO.getCallOrder().indexOf("noteExists");
+        int getByIdIndex = mockDAO.getCallOrder().indexOf("getNoteById");
+        int deleteIndex = mockDAO.getCallOrder().indexOf("deleteNote");
+
+        // Then: noteExists should be found, others should return -1
+        assertEquals(0, existsIndex, "noteExists should be at index 0");
+        assertEquals(-1, getByIdIndex, "getNoteById should return -1 when not called");
+        assertEquals(-1, deleteIndex, "deleteNote should return -1 when not called");
     }
 
     /**
