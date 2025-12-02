@@ -26,6 +26,10 @@ class EditNoteInteractorTest {
         interactor = new EditNoteInteractor(dataAccess, presenter);
     }
 
+    /**
+     * Tests the successful edit of a note with valid content.
+     * Verifies that the note content is updated and success view is called.
+     */
     @Test
     void testSuccess() {
         // Setup
@@ -44,6 +48,10 @@ class EditNoteInteractorTest {
         assertEquals("Updated", presenter.outputData.getUpdatedContent());
     }
 
+    /**
+     * Tests editing a note that doesn't exist in the system.
+     * Verifies that fail view is called with "Note not found." error.
+     */
     @Test
     void testNoteNotFound() {
         interactor.execute(new EditNoteInputData("FAKE", "Content"));
@@ -52,6 +60,10 @@ class EditNoteInteractorTest {
         assertEquals("Note not found.", presenter.errorMessage);
     }
 
+    /**
+     * Tests editing a note with null content.
+     * Verifies that fail view is called with "Note content cannot be empty." error.
+     */
     @Test
     void testNullContent() {
         Location location = new Location(43.6629, -79.3957);
@@ -66,6 +78,10 @@ class EditNoteInteractorTest {
         assertEquals("Note content cannot be empty.", presenter.errorMessage);
     }
 
+    /**
+     * Tests editing a note with empty string content.
+     * Verifies that fail view is called with "Note content cannot be empty." error.
+     */
     @Test
     void testEmptyContent() {
         Location location = new Location(43.6629, -79.3957);
@@ -80,6 +96,10 @@ class EditNoteInteractorTest {
         assertEquals("Note content cannot be empty.", presenter.errorMessage);
     }
 
+    /**
+     * Tests editing a note with whitespace-only content.
+     * Verifies that fail view is called with "Note content cannot be empty." error.
+     */
     @Test
     void testWhitespaceOnly() {
         Location location = new Location(43.6629, -79.3957);
@@ -94,6 +114,10 @@ class EditNoteInteractorTest {
         assertEquals("Note content cannot be empty.", presenter.errorMessage);
     }
 
+    /**
+     * Tests editing a note with content exceeding 500 characters.
+     * Verifies that fail view is called with "Note content too long" error.
+     */
     @Test
     void testContentTooLong() {
         Location location = new Location(43.6629, -79.3957);
@@ -109,6 +133,10 @@ class EditNoteInteractorTest {
         assertEquals("Note content too long (max 500 characters).", presenter.errorMessage);
     }
 
+    /**
+     * Tests editing a note with exactly 500 characters (boundary test).
+     * Verifies that this is accepted and success view is called.
+     */
     @Test
     void testExactly500Characters() {
         Location location = new Location(43.6629, -79.3957);
@@ -122,6 +150,68 @@ class EditNoteInteractorTest {
 
         assertTrue(presenter.successCalled);
         assertEquals(exactly500, presenter.outputData.getUpdatedContent());
+    }
+
+    /**
+     * Tests editing a note with content containing special characters.
+     * Verifies that special characters are accepted and stored correctly.
+     */
+    @Test
+    void testSpecialCharacters() {
+        Location location = new Location(43.6629, -79.3957);
+        LandmarkInfo info = new LandmarkInfo("123 St", "Desc", "9-5", "Museum");
+        Landmark landmark = new Landmark("L1", "Test", location, info, 0);
+        Note note = new Note("N1", landmark, "Original", Instant.now(), Instant.now());
+        dataAccess.addNote(note);
+
+        String specialContent = "Content with @#$%^&*()!";
+        interactor.execute(new EditNoteInputData("N1", specialContent));
+
+        assertTrue(presenter.successCalled);
+        assertEquals(specialContent, presenter.outputData.getUpdatedContent());
+    }
+
+    /**
+     * Tests editing a note multiple times in sequence.
+     * Verifies that each edit updates the note correctly.
+     */
+    @Test
+    void testMultipleEdits() {
+        Location location = new Location(43.6629, -79.3957);
+        LandmarkInfo info = new LandmarkInfo("123 St", "Desc", "9-5", "Museum");
+        Landmark landmark = new Landmark("L1", "Test", location, info, 0);
+        Note note = new Note("N1", landmark, "Original", Instant.now(), Instant.now());
+        dataAccess.addNote(note);
+
+        // First edit
+        interactor.execute(new EditNoteInputData("N1", "First edit"));
+        assertTrue(presenter.successCalled);
+        assertEquals("First edit", presenter.outputData.getUpdatedContent());
+
+        // Second edit
+        presenter.successCalled = false; // Reset
+        interactor.execute(new EditNoteInputData("N1", "Second edit"));
+        assertTrue(presenter.successCalled);
+        assertEquals("Second edit", presenter.outputData.getUpdatedContent());
+    }
+
+    /**
+     * Tests editing a note with content at 499 characters (just under limit).
+     * Verifies that this is accepted and success view is called.
+     */
+    @Test
+    void testContentJustUnderLimit() {
+        Location location = new Location(43.6629, -79.3957);
+        LandmarkInfo info = new LandmarkInfo("123 St", "Desc", "9-5", "Museum");
+        Landmark landmark = new Landmark("L1", "Test", location, info, 0);
+        Note note = new Note("N1", landmark, "Original", Instant.now(), Instant.now());
+        dataAccess.addNote(note);
+
+        String just499 = "a".repeat(499);
+        interactor.execute(new EditNoteInputData("N1", just499));
+
+        assertTrue(presenter.successCalled);
+        assertEquals(just499, presenter.outputData.getUpdatedContent());
     }
 
     // Mock Data Access
