@@ -7,16 +7,16 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests:
- * - testBrowseLandmarksAction
- * - testPlanARouteAction
- * - testMyProgressAction
- * - testUnknownAction
- * - testEmptyAction
- * - testNullAction
- * - testActionWithExtraSpaces
- * - testCaseSensitiveAction
- * - testSpecialCharactersAction
- * - testMultipleActions
+ *testBrowseLandmarksAction
+ *testPlanARouteAction
+ *testMyProgressAction
+ *testUnknownAction
+ *testEmptyAction
+ *testNullAction
+ *testActionWithExtraSpaces
+ *testCaseSensitiveAction
+ *testSpecialCharactersAction
+ *testMultipleActions
  */
 class HomescreenInteractorTest {
 
