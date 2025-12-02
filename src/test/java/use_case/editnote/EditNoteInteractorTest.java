@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
-
 /**
  * Tests made:
  * testSuccess
@@ -26,8 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * testMultipleEdits
  * testContentJustUnderLimit
  */
-
-
+//edits
 class EditNoteInteractorTest {
 
     private TestDataAccess dataAccess;
@@ -48,39 +46,24 @@ class EditNoteInteractorTest {
     @Test
     void testSuccess() {
         // Setup
-        Location location = new Location(43.6596, -79.3975);
-        LandmarkInfo info = new LandmarkInfo(
-                "40 St George St",
-                "Computer science and engineering building",
-                "24 hours",
-                "Academic Building"
-        );
-        Landmark landmark = new Landmark(
-                "bahen-centre",
-                "Bahen Centre for Information Technology",
-                location,
-                info,
-                0
-        );
-        Note note = new Note(
-                "Bahen Centre for Information Technology2025-11-30T00:34:24.550208Z",
-                landmark,
-                "Original content",
-                Instant.now(),
-                Instant.now()
-        );
+        Location location = new Location(43.6629, -79.3957);
+        LandmarkInfo info = new LandmarkInfo("123 St", "Desc", "9-5", "Museum");
+        Landmark landmark = new Landmark("L1", "Test Landmark", location, info, 0);
+        Note note = new Note("N1", landmark, "Original", Instant.now(), Instant.now());
         dataAccess.addNote(note);
 
         // Execute
-        interactor.execute(new EditNoteInputData(
-                "Bahen Centre for Information Technology2025-11-30T00:34:24.550208Z",
-                "This place was Great!"
-        ));
+        interactor.execute(new EditNoteInputData("N1", "Updated"));
 
         // Verify
         assertTrue(presenter.successCalled);
         assertFalse(presenter.failCalled);
-        assertEquals("This place was Great!", presenter.outputData.getUpdatedContent());
+
+        // Test all getters for full coverage
+        assertEquals("Updated", presenter.outputData.getUpdatedContent());
+        assertEquals("N1", presenter.outputData.getNoteId());
+        assertTrue(presenter.outputData.isSuccess());
+        assertNotNull(presenter.outputData.getUpdatedAt());
     }
 
     /**
@@ -89,10 +72,7 @@ class EditNoteInteractorTest {
      */
     @Test
     void testNoteNotFound() {
-        interactor.execute(new EditNoteInputData(
-                "Robarts Library2025-99-99T99:99:99.999999Z",
-                "Content"
-        ));
+        interactor.execute(new EditNoteInputData("FAKE", "Content"));
 
         assertTrue(presenter.failCalled);
         assertEquals("Note not found.", presenter.errorMessage);
@@ -104,33 +84,13 @@ class EditNoteInteractorTest {
      */
     @Test
     void testNullContent() {
-        Location location = new Location(43.6645, -79.3996);
-        LandmarkInfo info = new LandmarkInfo(
-                "100 St George St",
-                "Large academic library",
-                "24 hours",
-                "Library"
-        );
-        Landmark landmark = new Landmark(
-                "robarts-library",
-                "Robarts Library",
-                location,
-                info,
-                0
-        );
-        Note note = new Note(
-                "Robarts Library2025-11-30T01:08:28.962320Z",
-                landmark,
-                "great place to study",
-                Instant.now(),
-                Instant.now()
-        );
+        Location location = new Location(43.6629, -79.3957);
+        LandmarkInfo info = new LandmarkInfo("123 St", "Desc", "9-5", "Museum");
+        Landmark landmark = new Landmark("L1", "Test", location, info, 0);
+        Note note = new Note("N1", landmark, "Original", Instant.now(), Instant.now());
         dataAccess.addNote(note);
 
-        interactor.execute(new EditNoteInputData(
-                "Robarts Library2025-11-30T01:08:28.962320Z",
-                null
-        ));
+        interactor.execute(new EditNoteInputData("N1", null));
 
         assertTrue(presenter.failCalled);
         assertEquals("Note content cannot be empty.", presenter.errorMessage);
@@ -142,33 +102,13 @@ class EditNoteInteractorTest {
      */
     @Test
     void testEmptyContent() {
-        Location location = new Location(43.6640, -79.3943);
-        LandmarkInfo info = new LandmarkInfo(
-                "7 Hart House Circle",
-                "Historic student center",
-                "8 AM - 11 PM",
-                "Student Building"
-        );
-        Landmark landmark = new Landmark(
-                "hart-house",
-                "Hart House",
-                location,
-                info,
-                0
-        );
-        Note note = new Note(
-                "Hart House2025-11-24T06:56:13.795618Z",
-                landmark,
-                "Original content",
-                Instant.now(),
-                Instant.now()
-        );
+        Location location = new Location(43.6629, -79.3957);
+        LandmarkInfo info = new LandmarkInfo("123 St", "Desc", "9-5", "Museum");
+        Landmark landmark = new Landmark("L1", "Test", location, info, 0);
+        Note note = new Note("N1", landmark, "Original", Instant.now(), Instant.now());
         dataAccess.addNote(note);
 
-        interactor.execute(new EditNoteInputData(
-                "Hart House2025-11-24T06:56:13.795618Z",
-                ""
-        ));
+        interactor.execute(new EditNoteInputData("N1", ""));
 
         assertTrue(presenter.failCalled);
         assertEquals("Note content cannot be empty.", presenter.errorMessage);
@@ -180,33 +120,13 @@ class EditNoteInteractorTest {
      */
     @Test
     void testWhitespaceOnly() {
-        Location location = new Location(43.6627, -79.3979);
-        LandmarkInfo info = new LandmarkInfo(
-                "100 St George St",
-                "Arts and humanities building",
-                "7 AM - 11 PM",
-                "Academic Building"
-        );
-        Landmark landmark = new Landmark(
-                "sidney-smith",
-                "Sidney Smith Hall",
-                location,
-                info,
-                0
-        );
-        Note note = new Note(
-                "Sidney Smith Hall2025-11-24T06:28:23.613285Z",
-                landmark,
-                "hi h hi",
-                Instant.now(),
-                Instant.now()
-        );
+        Location location = new Location(43.6629, -79.3957);
+        LandmarkInfo info = new LandmarkInfo("123 St", "Desc", "9-5", "Museum");
+        Landmark landmark = new Landmark("L1", "Test", location, info, 0);
+        Note note = new Note("N1", landmark, "Original", Instant.now(), Instant.now());
         dataAccess.addNote(note);
 
-        interactor.execute(new EditNoteInputData(
-                "Sidney Smith Hall2025-11-24T06:28:23.613285Z",
-                "   "
-        ));
+        interactor.execute(new EditNoteInputData("N1", "   "));
 
         assertTrue(presenter.failCalled);
         assertEquals("Note content cannot be empty.", presenter.errorMessage);
@@ -218,34 +138,14 @@ class EditNoteInteractorTest {
      */
     @Test
     void testContentTooLong() {
-        Location location = new Location(43.6664, -79.3916);
-        LandmarkInfo info = new LandmarkInfo(
-                "71 Queen's Park Crescent",
-                "Trinity College library",
-                "9 AM - 10 PM",
-                "Library"
-        );
-        Landmark landmark = new Landmark(
-                "pratt-library",
-                "E.J. Pratt Library",
-                location,
-                info,
-                0
-        );
-        Note note = new Note(
-                "E.J. Pratt Library2025-11-24T06:24:58.227482Z",
-                landmark,
-                "hi",
-                Instant.now(),
-                Instant.now()
-        );
+        Location location = new Location(43.6629, -79.3957);
+        LandmarkInfo info = new LandmarkInfo("123 St", "Desc", "9-5", "Museum");
+        Landmark landmark = new Landmark("L1", "Test", location, info, 0);
+        Note note = new Note("N1", landmark, "Original", Instant.now(), Instant.now());
         dataAccess.addNote(note);
 
         String tooLong = "a".repeat(501);
-        interactor.execute(new EditNoteInputData(
-                "E.J. Pratt Library2025-11-24T06:24:58.227482Z",
-                tooLong
-        ));
+        interactor.execute(new EditNoteInputData("N1", tooLong));
 
         assertTrue(presenter.failCalled);
         assertEquals("Note content too long (max 500 characters).", presenter.errorMessage);
@@ -257,37 +157,19 @@ class EditNoteInteractorTest {
      */
     @Test
     void testExactly500Characters() {
-        Location location = new Location(43.6621, -79.3935);
-        LandmarkInfo info = new LandmarkInfo(
-                "9 King's College Circle",
-                "Science information centre",
-                "24 hours",
-                "Library"
-        );
-        Landmark landmark = new Landmark(
-                "gerstein",
-                "Gerstein Science Information Centre",
-                location,
-                info,
-                0
-        );
-        Note note = new Note(
-                "Gerstein Science Information Centre2025-11-24T18:29:02.016579Z",
-                landmark,
-                "gihureoubgeor",
-                Instant.now(),
-                Instant.now()
-        );
+        Location location = new Location(43.6629, -79.3957);
+        LandmarkInfo info = new LandmarkInfo("123 St", "Desc", "9-5", "Museum");
+        Landmark landmark = new Landmark("L1", "Test", location, info, 0);
+        Note note = new Note("N1", landmark, "Original", Instant.now(), Instant.now());
         dataAccess.addNote(note);
 
         String exactly500 = "a".repeat(500);
-        interactor.execute(new EditNoteInputData(
-                "Gerstein Science Information Centre2025-11-24T18:29:02.016579Z",
-                exactly500
-        ));
+        interactor.execute(new EditNoteInputData("N1", exactly500));
 
         assertTrue(presenter.successCalled);
         assertEquals(exactly500, presenter.outputData.getUpdatedContent());
+        assertEquals("N1", presenter.outputData.getNoteId());
+        assertTrue(presenter.outputData.isSuccess());
     }
 
     /**
@@ -296,34 +178,14 @@ class EditNoteInteractorTest {
      */
     @Test
     void testSpecialCharacters() {
-        Location location = new Location(43.6599, -79.3919);
-        LandmarkInfo info = new LandmarkInfo(
-                "144 College St",
-                "Faculty of pharmacy building",
-                "8 AM - 8 PM",
-                "Academic Building"
-        );
-        Landmark landmark = new Landmark(
-                "leslie-dan",
-                "Leslie Dan Pharmacy Building",
-                location,
-                info,
-                0
-        );
-        Note note = new Note(
-                "Leslie Dan Pharmacy Building2025-11-24T06:24:28.680359Z",
-                landmark,
-                "hibuiib",
-                Instant.now(),
-                Instant.now()
-        );
+        Location location = new Location(43.6629, -79.3957);
+        LandmarkInfo info = new LandmarkInfo("123 St", "Desc", "9-5", "Museum");
+        Landmark landmark = new Landmark("L1", "Test", location, info, 0);
+        Note note = new Note("N1", landmark, "Original", Instant.now(), Instant.now());
         dataAccess.addNote(note);
 
         String specialContent = "Content with @#$%^&*()!";
-        interactor.execute(new EditNoteInputData(
-                "Leslie Dan Pharmacy Building2025-11-24T06:24:28.680359Z",
-                specialContent
-        ));
+        interactor.execute(new EditNoteInputData("N1", specialContent));
 
         assertTrue(presenter.successCalled);
         assertEquals(specialContent, presenter.outputData.getUpdatedContent());
@@ -335,43 +197,20 @@ class EditNoteInteractorTest {
      */
     @Test
     void testMultipleEdits() {
-        Location location = new Location(43.6610, -79.3934);
-        LandmarkInfo info = new LandmarkInfo(
-                "1 King's College Circle",
-                "Medical sciences building",
-                "7 AM - 10 PM",
-                "Academic Building"
-        );
-        Landmark landmark = new Landmark(
-                "med-sci",
-                "Medical Sciences Building",
-                location,
-                info,
-                0
-        );
-        Note note = new Note(
-                "Medical Sciences Building2025-11-24T06:37:58.116087Z",
-                landmark,
-                "hi",
-                Instant.now(),
-                Instant.now()
-        );
+        Location location = new Location(43.6629, -79.3957);
+        LandmarkInfo info = new LandmarkInfo("123 St", "Desc", "9-5", "Museum");
+        Landmark landmark = new Landmark("L1", "Test", location, info, 0);
+        Note note = new Note("N1", landmark, "Original", Instant.now(), Instant.now());
         dataAccess.addNote(note);
 
         // First edit
-        interactor.execute(new EditNoteInputData(
-                "Medical Sciences Building2025-11-24T06:37:58.116087Z",
-                "First edit"
-        ));
+        interactor.execute(new EditNoteInputData("N1", "First edit"));
         assertTrue(presenter.successCalled);
         assertEquals("First edit", presenter.outputData.getUpdatedContent());
 
         // Second edit
         presenter.successCalled = false; // Reset
-        interactor.execute(new EditNoteInputData(
-                "Medical Sciences Building2025-11-24T06:37:58.116087Z",
-                "Second edit"
-        ));
+        interactor.execute(new EditNoteInputData("N1", "Second edit"));
         assertTrue(presenter.successCalled);
         assertEquals("Second edit", presenter.outputData.getUpdatedContent());
     }
@@ -382,34 +221,14 @@ class EditNoteInteractorTest {
      */
     @Test
     void testContentJustUnderLimit() {
-        Location location = new Location(43.6609, -79.3957);
-        LandmarkInfo info = new LandmarkInfo(
-                "31 King's College Circle",
-                "Historic convocation hall",
-                "Varies by event",
-                "Event Space"
-        );
-        Landmark landmark = new Landmark(
-                "convocation-hall",
-                "Convocation Hall",
-                location,
-                info,
-                0
-        );
-        Note note = new Note(
-                "Convocation Hall2025-11-22T18:56:18.905731Z",
-                landmark,
-                "hi",
-                Instant.now(),
-                Instant.now()
-        );
+        Location location = new Location(43.6629, -79.3957);
+        LandmarkInfo info = new LandmarkInfo("123 St", "Desc", "9-5", "Museum");
+        Landmark landmark = new Landmark("L1", "Test", location, info, 0);
+        Note note = new Note("N1", landmark, "Original", Instant.now(), Instant.now());
         dataAccess.addNote(note);
 
         String just499 = "a".repeat(499);
-        interactor.execute(new EditNoteInputData(
-                "Convocation Hall2025-11-22T18:56:18.905731Z",
-                just499
-        ));
+        interactor.execute(new EditNoteInputData("N1", just499));
 
         assertTrue(presenter.successCalled);
         assertEquals(just499, presenter.outputData.getUpdatedContent());
