@@ -10,6 +10,19 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Tests:
+ * testSuccessfulLogin
+ * testUserDoesNotExist
+ * testIncorrectPassword
+ * testEmptyUsername
+ * testEmptyPassword
+ * testMultipleLogins
+ * testUsernameWithSpecialCharacters
+ * testPasswordWithSpecialCharacters
+ * testCaseSensitiveUsername
+ * testLongUsername
+ */
 class LoginInteractorTest {
 
     private TestDataAccess dataAccess;
@@ -50,7 +63,7 @@ class LoginInteractorTest {
 
         assertTrue(presenter.failCalled);
         assertFalse(presenter.successCalled);
-        assertEquals("nonexistent: Account does not exist.", presenter.errorMessage);
+        assertEquals("Account does not exist.", presenter.errorMessage);
     }
 
     /**
