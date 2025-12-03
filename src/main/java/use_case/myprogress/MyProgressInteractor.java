@@ -1,14 +1,14 @@
 package use_case.myprogress;
 
+import java.time.*;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import data_access.LandmarkDataAccessInterface;
 import data_access.UserDataAccessInterface;
 import entity.Landmark;
 import entity.User;
 import entity.Visit;
-
-import java.time.*;
-import java.util.*;
-import java.util.stream.Collectors;
 
 public class MyProgressInteractor implements MyProgressInputBoundary {
 
@@ -28,30 +28,30 @@ public class MyProgressInteractor implements MyProgressInputBoundary {
     @Override
     public void execute() {
         // Fetch user
-        User user = userDAO.get(userDAO.getCurrentUsername());
+        final User user = userDAO.get(userDAO.getCurrentUsername());
         if (user == null) {
             presenter.prepareFailView("User not found");
             return;
         }
-        List<Visit> visits = user.getVisits();
-        List<Landmark> landmarks = landmarkDAO.getLandmarks();
+        final List<Visit> visits = user.getVisits();
+        final List<Landmark> landmarks = landmarkDAO.getLandmarks();
 
         // Calculate all stats
-        int uniqueVisited = calculateUniqueVisited(visits);
-        int totalLandmarks = landmarks.size();
-        double percentage = calculatePercentage(uniqueVisited, totalLandmarks);
+        final int uniqueVisited = calculateUniqueVisited(visits);
+        final int totalLandmarks = landmarks.size();
+        final double percentage = calculatePercentage(uniqueVisited, totalLandmarks);
 
-        int visitsToday = calculateVisitsInDays(visits, 0);
-        int visitsThisWeek = calculateVisitsInDays(visits, 7);
-        int visitsThisMonth = calculateVisitsInDays(visits, 30);
-        int visitsTotal = visits.size();
+        final int visitsToday = calculateVisitsInDays(visits, 0);
+        final int visitsThisWeek = calculateVisitsInDays(visits, 7);
+        final int visitsThisMonth = calculateVisitsInDays(visits, 30);
+        final int visitsTotal = visits.size();
 
-        int currentStreak = calculateCurrentStreak(visits);
-        int longestStreak = calculateLongestStreak(visits);
+        final int currentStreak = calculateCurrentStreak(visits);
+        final int longestStreak = calculateLongestStreak(visits);
 
         String mostVisitedName = "";
         int mostVisitedCount = 0;
-        Map<String, Integer> visitsPerLandmark = findVisitsPerLandmark(visits);
+        final Map<String, Integer> visitsPerLandmark = findVisitsPerLandmark(visits);
         if (!(visitsPerLandmark.isEmpty())) {
             for (Map.Entry<String, Integer> entry : visitsPerLandmark.entrySet()) {
                 if (entry.getValue() > mostVisitedCount) {
@@ -62,7 +62,7 @@ public class MyProgressInteractor implements MyProgressInputBoundary {
         }
 
         // Send to presenter
-        MyProgressOutputData outputData = new MyProgressOutputData(
+        final MyProgressOutputData outputData = new MyProgressOutputData(
                 user.getUsername(),
                 uniqueVisited,
                 totalLandmarks,
@@ -81,8 +81,7 @@ public class MyProgressInteractor implements MyProgressInputBoundary {
     }
 
     private int calculateUniqueVisited(List<Visit> visits) {
-        if (visits.isEmpty()) return 0;
-        Set<String> visited = new HashSet<>();
+        final Set<String> visited = new HashSet<>();
         for (Visit visit : visits) {
             visited.add(visit.getLandmark().getLandmarkName());
         }
@@ -95,9 +94,8 @@ public class MyProgressInteractor implements MyProgressInputBoundary {
     }
 
     private int calculateVisitsInDays(List<Visit> visits, int days) {
-        if (visits.isEmpty()) return 0;
-        LocalDate cutoff = LocalDate.now().minusDays(days);
-        Instant cutoffInstant = cutoff.atStartOfDay(ZoneId.systemDefault()).toInstant();
+        final LocalDate cutoff = LocalDate.now().minusDays(days);
+        final Instant cutoffInstant = cutoff.atStartOfDay(ZoneId.systemDefault()).toInstant();
 
         return (int) visits.stream()
                 .filter(v -> v.getVisitedAt().isAfter(cutoffInstant))
@@ -105,20 +103,14 @@ public class MyProgressInteractor implements MyProgressInputBoundary {
     }
 
     private int calculateCurrentStreak(List<Visit> visits) {
-        if (visits.isEmpty()) return 0;
-
-        List<LocalDate> dates = visits.stream()
+        final List<LocalDate> dates = visits.stream()
                 .map(v -> v.getVisitedAt().atZone(ZoneId.systemDefault()).toLocalDate())
                 .distinct()
                 .sorted(Comparator.reverseOrder())
                 .collect(Collectors.toList());
 
-        LocalDate today = LocalDate.now();
-        LocalDate yesterday = today.minusDays(1);
-
-        if (!dates.contains(today) && !dates.contains(yesterday)) {
-            return 0;
-        }
+        final LocalDate today = LocalDate.now();
+        final LocalDate yesterday = today.minusDays(1);
 
         int streak = 0;
         LocalDate check = dates.contains(today) ? today : yesterday;
@@ -127,7 +119,8 @@ public class MyProgressInteractor implements MyProgressInputBoundary {
             if (date.equals(check)) {
                 streak++;
                 check = check.minusDays(1);
-            } else if (date.isBefore(check)) {
+            }
+            else {
                 break;
             }
         }
@@ -151,7 +144,8 @@ public class MyProgressInteractor implements MyProgressInputBoundary {
             if (dates.get(i - 1).plusDays(1).equals(dates.get(i))) {
                 current++;
                 longest = Math.max(longest, current);
-            } else {
+            }
+            else {
                 current = 1;
             }
         }
@@ -160,11 +154,9 @@ public class MyProgressInteractor implements MyProgressInputBoundary {
     }
 
     private Map<String, Integer> findVisitsPerLandmark(List<Visit> visits) {
-        if (visits.isEmpty()) return new HashMap<>();
-
-        Map<String, Integer> counts = new HashMap<>();
+        final Map<String, Integer> counts = new HashMap<>();
         for (Visit v : visits) {
-            String name = v.getLandmark().getLandmarkName();
+            final String name = v.getLandmark().getLandmarkName();
             counts.put(name, counts.getOrDefault(name, 0) + 1);
         }
 
