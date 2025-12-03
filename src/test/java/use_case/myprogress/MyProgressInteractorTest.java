@@ -75,6 +75,7 @@ class MyProgressInteractorTest {
         assertEquals(0, data.getCurrentVisitStreak(), "Current streak should be 0");
         assertEquals(0, data.getLongestVisitStreak(), "Longest streak should be 0");
         assertEquals("", data.getMostVisitedLandmarkName(), "Most visited name should be empty");
+        assertEquals("testuser", data.getUsername(), "Username should be testuser");
     }
 
     @Test
@@ -183,7 +184,7 @@ class MyProgressInteractorTest {
         ZoneId zoneId = ZoneId.systemDefault();
 
         testUser.getVisits().add(new Visit("v1", landmark1,
-                today.minusDays(3).atStartOfDay(zoneId).toInstant()));
+                today.atStartOfDay(zoneId).minusHours(12).toInstant()));
         testUser.getVisits().add(new Visit("v2", landmark2,
                 today.minusDays(1).atStartOfDay(zoneId).toInstant()));
         testUser.getVisits().add(new Visit("v3", landmark3,
@@ -194,7 +195,28 @@ class MyProgressInteractorTest {
 
         // Assert
         MyProgressOutputData data = mockPresenter.getOutputData();
-        assertEquals(3, data.getCurrentVisitStreak(), "Current streak should be 3 consecutive days");
+        assertEquals(2, data.getCurrentVisitStreak(), "Current streak should be 2 consecutive days");
+    }
+
+    @Test
+    void testCurrentStreakReset() {
+        // Arrange - visits on consecutive days but ends in neither yesterday nor today
+        LocalDate today = LocalDate.now();
+        ZoneId zoneId = ZoneId.systemDefault();
+
+        testUser.getVisits().add(new Visit("v1", landmark1,
+                today.minusDays(4).atStartOfDay(zoneId).toInstant()));
+        testUser.getVisits().add(new Visit("v2", landmark2,
+                today.minusDays(3).atStartOfDay(zoneId).toInstant()));
+        testUser.getVisits().add(new Visit("v3", landmark3,
+                today.minusDays(2).atStartOfDay(zoneId).toInstant()));
+
+        // Act
+        interactor.execute();
+
+        // Assert
+        MyProgressOutputData data = mockPresenter.getOutputData();
+        assertEquals(0, data.getCurrentVisitStreak(), "Current streak should be 0 consecutive days");
     }
 
     @Test
@@ -255,6 +277,21 @@ class MyProgressInteractorTest {
         // Assert
         assertTrue(mockPresenter.isFailCalled(), "Fail should be called");
         assertEquals("User not found", mockPresenter.getFailMessage(), "Error message should match");
+    }
+
+    @Test
+    void testNoTotalLandmarksCompletionPercentage() {
+        // Arrange - there are 0 total landmarks
+        mockLandmarkDAO = new MockLandmarkDAO();
+        interactor = new MyProgressInteractor(mockUserDAO, mockLandmarkDAO, mockPresenter);
+        // Act
+        interactor.execute();
+
+        // Assert
+        assertTrue(mockPresenter.isSuccessCalled(), "Success should be called");
+        MyProgressOutputData data = mockPresenter.getOutputData();
+        assertNotNull(data, "Output data should not be null");
+        assertEquals(0.0, data.getUniqueLandmarksCompletionPercentage(), "Percentage should be 0");
     }
 
     // =============== Helper Methods ===============
